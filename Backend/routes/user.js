@@ -3,13 +3,15 @@
 const router = require("express").Router();
 const User = require("../models/user");
 const bcrypt = require("bcryptjs");
-const jwt = require("")
+const jwt = require("jsonwebtoken");
+const jwt_secret=process.env.JWT_SECRET
+const {authenticateToken}=require("./userAuth")
 //sign up
 router.post("/sign-up",async(req,res)=>{
     try{
         const {username , email , password,address}= req.body;
         //checking length of username
-        if(usernmame.length<5){
+        if(username.length<5){
             return res
             .status(400)
             .json({message:"Username length should br greater than 5"}); //400 is error bcz of user
@@ -54,35 +56,73 @@ router.post("/sign-up",async(req,res)=>{
 })
 
 //sign in
-router.post("/sign-in",async(req,res)=>{
-    try{
-        //checking for existing username
-        const {username,password} = req.body;
-        const existingUser = await User.findOne({ username});
-        if(!existingUser)
-        {
-            res.status(400).json({ message: "Invalid credentials"});
-        }
-        //checking for right password
-        await bcrypt.compare(password,existingUser.password,(err,data)=> {
-            if(data){
-                const authClaims = [
-                    {name : existingUser.username},
-                    {role : existingUser.role}
-                ]
+router.post("/sign-in", async (req, res) => {
+    try {
+        const { username, password } = req.body;
 
-                //using jw tokens
-                const token = jwt.sign(authClaims,"biblio",{expiresIn: "30d",}) //secret key is biblio
-                // res.status(200).json({ message: "Signed In successfully"});
-                //instead of printed signed successfully...print id and role
-                res.status(200).json({ id: existingUser._id,role: existingUser.role,token: token});
-            }
-            else{
-                res.status(400).json({ message: "Invalid credentials"});
-            }
+        // Check if the user exists
+        const existingUser = await User.findOne({ username });
+        if (!existingUser) {
+            return res.status(400).json({ message: "Invalid credentials" });
+        }
+
+        // Check the password
+        const isPasswordCorrect = await bcrypt.compare(password, existingUser.password);
+        if (!isPasswordCorrect) {
+            return res.status(400).json({ message: "Invalid credentials" });
+        }
+
+        // JWT expects a plain object for signing
+        const authClaims = {
+            name: existingUser.username,
+            role: existingUser.role,
+            id:existingUser._id,
+        };
+
+        // Generate the token
+        const token = jwt.sign(authClaims, jwt_secret, { expiresIn: "30d" });
+
+        // Respond with user info and token
+        return res.status(200).json({
+            id: existingUser._id,
+            role: existingUser.role,
+            token: token,
         });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+});
+
+
+//get user info
+router.get("/get-user-information",authenticateToken,async(req,res)=>{
+    try{
+        //check if user-available
+        const {id} = req.headers;
+        const data= await User.findById(id).select("-password");//excluding password so that it is not showed on getting user info
+        return res.status(200).json(data);
     }catch(error){
-        res.status(500).json({ message : "Internal server error"});
+        res.status(500).json({message:"Internal Server error"})
     }
 })
+
+//api for updating address->put req for updation
+//authenticatToken to check user is changing his own address
+router.put("/update-address",authenticateToken,async(req,res)=>{
+    try{
+        const {id} = req.headers;
+        const {address} = req.body;
+        await User.findByIdAndUpdate(id,{address:address});
+        return res.status(200).json({message:"Address updated successfully"});
+    }catch(error){
+        res.status(500).json({message:"Internal Server error"})
+
+    }
+    // console.log("PUT /update-address hit");
+    // console.log("Headers:", req.headers);
+    // console.log("Body:", req.body);
+})
+
+
 module.exports = router;
