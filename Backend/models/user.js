@@ -22,18 +22,10 @@ const user = new mongoose.Schema({
         type: String,
         default: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR9R-Bg8Q9cjWzQtLgYFbXERHFJ_S7PsxrqQV8Ouv1UCJMMpe0kFZVS3NoA7CGuA_Pr3LM&usqp=CAU", //deafult profile pic
     },
-    password: {
-        type: String,
-        required: true,
-    },
     role: {
         type: String,
         default: "user",
         enum: ["user" , "admin"],
-    },
-    password: {
-        type: String,
-        required: true,
     },
     favourites: [{
             type: mongoose.Types.ObjectId,
