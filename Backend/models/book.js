@@ -24,7 +24,41 @@ const books = new mongoose.Schema({
         type: String,
         required: true,
     },
-},
+    ratings: {
+        type: [
+          {
+            id: {
+              type: mongoose.Schema.Types.ObjectId,
+              ref: "user",
+              required: true,
+            },
+            rating: {
+              type: Number,
+              min: 1,
+              max: 5,
+              required: true,
+            },
+          },
+        ],
+        default: [], // Default to an empty array
+      },
+      reviews: {
+        type: [
+          {
+            id: {
+              type: mongoose.Schema.Types.ObjectId,
+              ref: "user",
+              required: true,
+            },
+            review: {
+              type: String,
+              required: true,
+            },
+          },
+        ],
+        default: [], // Default to an empty array
+      },
+    },      
     {timestamps: true} //sort orders based on time
 );
 
