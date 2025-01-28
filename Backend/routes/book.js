@@ -35,17 +35,15 @@ router.post("/add-book",authenticateToken,async(req,res)=>{
 //update book
 router.put("/update-book",authenticateToken,async(req,res)=>{
     try{
-        const {bookid}= req.headers;
-
-        // if (req.body.ratings) {
-        //     updateData.ratings = req.body.ratings; // Update the average rating if provided
-        // }
-
-        // if (req.body.reviews) {
-        //     updateData.reviews = req.body.reviews; // Update the reviews if provided
-        // }
-
-        const updatedBook =await Book.findByIdAndUpdate(bookid,{
+        const {bookid,id}= req.headers;
+        if (!bookid) {
+            return res.status(400).json({ message: "Book ID is required in headers" });
+        }
+        const user = await User.findById(id);
+        if(user.role !== "admin"){
+            return  res.status(400).json({message:"You are not having access to perform admin work"})
+        }
+        const updatedBook=await Book.findByIdAndUpdate(bookid,{
             url:req.body.url,
             title:req.body.title,
             author:req.body.author,
@@ -75,7 +73,14 @@ router.put("/update-book",authenticateToken,async(req,res)=>{
 //delete
 router.delete("/delete-book",authenticateToken,async(req,res)=>{
     try{
-        const {bookid}= req.headers;
+        const {bookid,id}= req.headers;
+        if (!bookid) {
+            return res.status(400).json({ message: "Book ID is required in headers" });
+        }
+        const user = await User.findById(id);
+        if(user.role !== "admin"){
+            return  res.status(400).json({message:"You are not having access to perform admin work"})
+        }
         await Book.findByIdAndDelete(bookid);
 
         return res.status(200).json({message:"Book deleted successfully"})
