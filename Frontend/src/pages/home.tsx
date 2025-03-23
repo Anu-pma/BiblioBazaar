@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 
-// Define a Book type to enforce correct typing
+// Defining a Book type to enforce correct typing
 interface Book {
   _id: string;
   url: string;
@@ -58,7 +58,7 @@ export function Home() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {recentBooks.map((book) => (
             <div key={book._id} className="p-4 border rounded-lg shadow-md">
-              <img src={book.url} alt={book.title} className="w-full h-40 object-cover rounded-md mb-2" />
+              <img src={book.url} alt={book.title} className="w-full h-40 object-contain rounded-md mb-2" />
               <h3 className="text-lg font-semibold">{book.title}</h3>
               <p className="text-sm text-gray-600">{book.author}</p>
               <p className="text-gray-700 mt-2">${book.price}</p>
