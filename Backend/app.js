@@ -1,3 +1,4 @@
+const cors = require("cors");
 const express = require("express"); //req express in a var
 const app = express(); //now app can use all functionalities of exp
 require("dotenv").config(); //requiring configfile of .env
@@ -7,6 +8,13 @@ const Books= require("./routes/book")
 const Favourite = require("./routes/favourite");
 const Cart = require("./routes/cart")
 const Order = require("./routes/order")
+
+app.use(cors({
+    origin: "http://localhost:5173", 
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true
+  }));
+
 app.use(express.json()); //data is coming in json format
 //routes
 app.use("/api/v1",User);

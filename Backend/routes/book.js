@@ -1,5 +1,4 @@
 //Admin api: add, update and delete
-
 const router = require("express").Router();
 const User = require("../models/user");
 const Book=require("../models/book")
@@ -228,7 +227,7 @@ router.get("/get-all-books",async(req,res)=>{
 router.get("/get-recent-books",async(req,res)=>{
     try{
         //sorting on the basis of recently added
-        const books= await Book.find().sort({createdAt :-1}).limit(4);
+        const books= await Book.find({}, "id url title price").sort({createdAt :-1}).limit(4);
         return res.json({
             status:"Success",
             data:books,
