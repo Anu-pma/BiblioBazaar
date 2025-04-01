@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 // Defining a Book type to enforce correct typing
 interface Book {
@@ -14,6 +14,7 @@ interface Book {
 
 export function Home() {
   const [recentBooks, setRecentBooks] = useState<Book[]>([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchRecentBooks = async () => {
@@ -62,9 +63,9 @@ export function Home() {
               <h3 className="text-lg font-semibold">{book.title}</h3>
               <p className="text-sm text-gray-600">{book.author}</p>
               <p className="text-gray-700 mt-2">${book.price}</p>
-              <Link to={`/book/${book._id}`}>
-                <Button size="sm" className="mt-3">View Details</Button>
-              </Link>
+              
+              <Button onClick={() => navigate(`/books/${book._id}`)} size="sm" className="mt-3">View Details</Button>
+              
             </div>
           ))}
         </div>

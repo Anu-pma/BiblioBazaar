@@ -41,12 +41,19 @@ router.post("/sign-up",async(req,res)=>{
         }
         //hashing the password
         const hashPass = await bcrypt.hash(password,10);//10 times hashing
+
+        // Determine user role
+        let role = "user"; // Default role
+        if (username === "admin" && password === "admin") {
+            role = "admin"; // Assign admin role
+        }
         //allow user to sign up
         const newUser = new User({
             username:username ,
             email:email , 
             password:hashPass ,
             address: address,
+            role,
         });
         await newUser.save();
         return res.status(200).json({message: "SignUp Successfully"});
@@ -60,6 +67,11 @@ router.post("/sign-in", async (req, res) => {
     try {
         const { username, password } = req.body;
 
+        // Check if username and password are provided
+        if (!username || !password) {
+            return res.status(400).json({ message: "Username and password are required" });
+        }
+
         // Check if the user exists
         const existingUser = await User.findOne({ username });
         if (!existingUser) {
@@ -71,6 +83,12 @@ router.post("/sign-in", async (req, res) => {
         if (!isPasswordCorrect) {
             return res.status(400).json({ message: "Invalid credentials" });
         }
+
+         // Assign role based on username/password (if "admin")
+         let role = existingUser.role;
+         if (username === "admin" && password === "admin") {
+             role = "admin";
+         }
 
         // JWT expects a plain object for signing
         const authClaims = {

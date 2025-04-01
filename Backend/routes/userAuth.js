@@ -19,6 +19,13 @@ const authenticateToken=(req,res,next)=>{
             //invalid token or expired -> 403(forbidden)
             return res.status(403).json({message:"Token expires. Please signin again"})
         }
+
+        // Check if username and password are "admin"
+        if (user && user.username === "admin" && user.password === "admin") {
+            user.role = "admin"; // Assign the admin role
+        } else {
+            user.role = "user"; // Default role
+        }
         req.user= user;//attach decoded user info to req obj
         next();//move to next mw or route
     })

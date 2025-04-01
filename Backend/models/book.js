@@ -16,10 +16,18 @@ const books = new mongoose.Schema({
         type: Number,
         required: true,
     },
+    stock: {
+      type: Number,
+      required: true,
+  },
     desc: {
         type: String,
         required: true,
     },
+    category: {
+      type: String,
+      required: true,
+  },
     language: {
         type: String,
         required: true,
