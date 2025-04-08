@@ -20,6 +20,10 @@ const books = new mongoose.Schema({
       type: Number,
       required: true,
   },
+  quantity: {
+    type: Number,
+    required: false,
+},
     desc: {
         type: String,
         required: true,
@@ -30,7 +34,7 @@ const books = new mongoose.Schema({
   },
     language: {
         type: String,
-        required: true,
+        required: false,
     },
     ratings: {
         type: [
@@ -38,13 +42,13 @@ const books = new mongoose.Schema({
             id: {
               type: mongoose.Schema.Types.ObjectId,
               ref: "user",
-              required: true,
+              required: false,
             },
             rating: {
               type: Number,
               min: 1,
               max: 5,
-              required: true,
+              required: false,
             },
           },
         ],
@@ -56,11 +60,11 @@ const books = new mongoose.Schema({
             id: {
               type: mongoose.Schema.Types.ObjectId,
               ref: "user",
-              required: true,
+              required: false,
             },
             review: {
               type: String,
-              required: true,
+              required: false,
             },
           },
         ],

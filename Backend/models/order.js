@@ -13,6 +13,9 @@ const order = new mongoose.Schema({
         default: "Order Placed",
         enum:["Order Placed" , "Out for Delivery,Delivered,Canceled"],
     },
+    total:{
+        type:Number,
+    }
   
 },
     {timestamps: true} //sort orders based on time

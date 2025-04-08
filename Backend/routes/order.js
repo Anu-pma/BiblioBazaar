@@ -96,4 +96,67 @@ router.post("/update-status",authenticateToken, async (req,res) =>{
     }
 });
 
+//get order count for a particular user
+router.get("/order-count", authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.headers;
+        if (!id) {
+            return res.status(400).json({ message: "User ID missing in headers" });
+        }
+
+        const count = await Order.countDocuments({ user: id });
+        return res.json({ count });
+    } catch (error) {
+        console.error("Error fetching order count:", error);
+        return res.status(500).json({ message: "An error occurred", error: error.message });
+    }
+});
+
+// GET /api/admin/stats
+router.get('/stats', async (req, res) => {
+    try {
+      const [totalBooks, totalOrders, totalUsers, orders] = await Promise.all([
+        Book.countDocuments(),
+        Order.countDocuments(),
+        User.countDocuments(),
+        Order.find({})
+      ]);
+  
+      const revenue = orders.reduce((sum, order) => sum + order.total, 0);
+  
+      res.json({
+        totalBooks,
+        totalOrders,
+        totalUsers,
+        revenue: parseFloat(revenue.toFixed(2)),
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Failed to fetch dashboard stats' });
+    }
+  });
+  
+  // GET /api/admin/orders/recent
+  router.get('/orders/recent', async (req, res) => {
+    try {
+      const recentOrders = await Order.find({})
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .populate('user', 'name');
+  
+      const formatted = recentOrders.map(order => ({
+        _id: order._id,
+        user: order.user?.name || 'Unknown',
+        total: order.total,
+        status: order.status,
+        date: order.createdAt,
+      }));
+  
+      res.json(formatted);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Failed to fetch recent orders' });
+    }
+  });
+
 module.exports = router;

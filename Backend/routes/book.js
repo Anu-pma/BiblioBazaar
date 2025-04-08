@@ -20,6 +20,8 @@ router.post("/add-book",authenticateToken,async(req,res)=>{
             author:req.body.author,
             price:req.body.price,
             desc:req.body.desc,
+            stock:req.body.stock,
+            category:req.body.category,
             language:req.body.language,
             ratings:[],
             reviews:[],

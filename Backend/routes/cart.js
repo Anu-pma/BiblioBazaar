@@ -21,8 +21,35 @@ router.put("/add-book-to-cart" , authenticateToken , async(req,res)=>{
         console.log(error);
         return res.status(500).json({ message : "An error occured"});
     }
-});
 
+ });
+// router.put("/add-book-to-cart", authenticateToken, async (req, res) => {
+//     try {
+//         const { bookid, id } = req.body;
+
+//         const userData = await User.findById(id);
+
+//         if (!userData) {
+//             return res.status(404).json({ status: "Error", message: "User not found." });
+//         }
+
+//         // Check if the book is already in cart
+//         const isBookInCart = userData.cart.includes(bookid);
+//         if (isBookInCart) {
+//             return res.json({ status: "Success", message: "Book already added in cart." });
+//         }
+
+//         // Push the book to user's cart
+//         await User.findByIdAndUpdate(id, {
+//             $push: { cart: bookid }
+//         });
+
+//         return res.json({ status: "Success", message: "Book added to cart." });
+//     } catch (error) {
+//         console.error("Add to cart error:", error);
+//         return res.status(500).json({ status: "Error", message: "An error occurred" });
+//     }
+// });
 //remove book from cart
 router.put("/remove-book-from-cart" , authenticateToken , async(req,res)=>{
     try {
@@ -30,9 +57,9 @@ router.put("/remove-book-from-cart" , authenticateToken , async(req,res)=>{
         const userData = await User.findById(id); 
 
         //to check if book already added
-        const isBookInCart = userData.favourites.includes(bookid);
+        const isBookInCart = userData.cart.includes(bookid);
         if(isBookInCart){
-            await User.findByIdAndUpdate(id , {$pull: { favourites: bookid } });
+            await User.findByIdAndUpdate(id , {$pull: { cart: bookid } });
         }
         return res.status(200).json({message: "Book removed from cart."});
     } catch (error) {
@@ -55,5 +82,8 @@ router.get("/cart-books" , authenticateToken , async(req,res)=>{
         return res.status(500).json({ message : "An error occured"});
     }
 });
+
+
+
 
 module.exports = router;
