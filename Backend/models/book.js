@@ -34,7 +34,7 @@ const books = new mongoose.Schema({
   },
     language: {
         type: String,
-        required: false,
+        required: true,
     },
     ratings: {
         type: [
