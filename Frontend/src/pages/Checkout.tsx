@@ -13,13 +13,19 @@ interface ShippingDetails {
   phone: string;
 }
 
+const stateCityMap: { [key: string]: string[] } = {
+  'Uttar Pradesh': ['Prayagraj', 'Lucknow', 'Kanpur'],
+  'Maharashtra': ['Mumbai', 'Pune', 'Nagpur'],
+  'Delhi': ['New Delhi'],
+};
+
 export default function Checkout() {
   const navigate = useNavigate();
   const { items, total, clearCart } = useCart();
   const [loading, setLoading] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [error, setError] = useState('');
-  
+
   const [shippingDetails, setShippingDetails] = useState<ShippingDetails>({
     fullName: '',
     address: '',
@@ -29,12 +35,21 @@ export default function Checkout() {
     phone: '',
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setShippingDetails(prev => ({
-      ...prev,
-      [name]: value
-    }));
+
+    if (name === 'state') {
+      setShippingDetails(prev => ({
+        ...prev,
+        state: value,
+        city: '' // reset city when state changes
+      }));
+    } else {
+      setShippingDetails(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -42,11 +57,17 @@ export default function Checkout() {
     setLoading(true);
     setError('');
 
+    // Phone validation
+    if (!/^\d{10}$/.test(shippingDetails.phone)) {
+      setError("Please enter a valid 10-digit phone number.");
+      setLoading(false);
+      return;
+    }
+
     try {
       const token = localStorage.getItem('token');
       const userId = localStorage.getItem('userId');
 
-      // Transform items to match the API's expected format
       const orderItems = items.map(item => ({
         _id: item._id
       }));
@@ -64,9 +85,9 @@ export default function Checkout() {
       if (response.data.status === "Success") {
         setOrderSuccess(true);
         clearCart();
-        // Update user's address if it's not set
+
         try {
-          await axios.patch('http://localhost:3000/api/v1/users/${userId}', {
+          await axios.patch(`http://localhost:3000/api/v1/users/${userId}`, {
             address: `${shippingDetails.address}, ${shippingDetails.city}, ${shippingDetails.state} ${shippingDetails.zipCode}`
           }, {
             headers: {
@@ -76,12 +97,7 @@ export default function Checkout() {
           });
         } catch (addressError) {
           console.error('Failed to update address:', addressError);
-          // Don't fail the order if address update fails
         }
-        
-        setTimeout(() => {
-          navigate('/orders');
-        }, 2000);
       }
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to place order. Please try again.');
@@ -114,11 +130,10 @@ export default function Checkout() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
           <h1 className="text-3xl font-bold mb-8">Checkout</h1>
-          
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="bg-white p-6 rounded-lg shadow-md">
               <h2 className="text-xl font-semibold mb-4">Shipping Details</h2>
-              
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -151,30 +166,40 @@ export default function Checkout() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      City
-                    </label>
-                    <input
-                      type="text"
-                      name="city"
-                      required
-                      value={shippingDetails.city}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       State
                     </label>
-                    <input
-                      type="text"
+                    <select
                       name="state"
                       required
                       value={shippingDetails.state}
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
+                    >
+                      <option value="">Select State</option>
+                      {Object.keys(stateCityMap).map(state => (
+                        <option key={state} value={state}>{state}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      City
+                    </label>
+                    <select
+                      name="city"
+                      required
+                      value={shippingDetails.city}
+                      onChange={handleInputChange}
+                      disabled={!shippingDetails.state}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">Select City</option>
+                      {shippingDetails.state &&
+                        stateCityMap[shippingDetails.state].map(city => (
+                          <option key={city} value={city}>{city}</option>
+                        ))}
+                    </select>
                   </div>
                 </div>
 
@@ -231,7 +256,6 @@ export default function Checkout() {
 
         <div className="bg-white p-6 rounded-lg shadow-md h-fit">
           <h2 className="text-xl font-bold mb-4">Order Summary</h2>
-          
           <div className="space-y-4 mb-4">
             {items.map(item => (
               <div key={item._id} className="flex justify-between">
@@ -242,7 +266,6 @@ export default function Checkout() {
               </div>
             ))}
           </div>
-          
           <div className="border-t pt-4">
             <div className="flex justify-between text-lg font-bold">
               <span>Total</span>
