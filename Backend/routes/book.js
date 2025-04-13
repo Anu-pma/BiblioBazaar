@@ -49,6 +49,8 @@ router.put("/update-book",authenticateToken,async(req,res)=>{
             title:req.body.title,
             author:req.body.author,
             price:req.body.price,
+            stock:req.body.stock,
+            category:req.body.category,
             desc:req.body.desc,
             language:req.body.language,
             ratings: req.body.ratings || [],  

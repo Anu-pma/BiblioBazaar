@@ -7,10 +7,11 @@ import { useFavorites } from '../context/FavoritesContext';
 //for type checking
 export type Book = {
     rating: any;
-    _id: string; // MongoDB uses `_id`
+    _id: string; // MongoDB uses _id
     url: string;
     title: string;
     author: string;
+    category:string;
     price: number;
     desc: string;
     language: string;
@@ -31,7 +32,8 @@ export default function Books() {
   const [search, setSearch] = useState('');//search query
   const [sortBy, setSortBy] = useState<'price' | 'title' | 'rating'>('title');//sort preference
   const [filterAuthor, setFilterAuthor] = useState('');//selected author filter
-  //const [filterCategory, setFilterCategory] = useState('');
+  const [filterCategory, setFilterCategory] = useState('');
+  const [filterLanguage, setFilterLanguage] = useState('');
   const [priceRange, setPriceRange] = useState({ min: 0, max: 0 });//default price range
   const [showFilters, setShowFilters] = useState(false);//filters visibility
   const [loading, setLoading] = useState(true);
@@ -64,7 +66,7 @@ export default function Books() {
   }, []);
   
 
-    //prevent `.map()` errors by ensuring books is an array
+    //prevent .map() errors by ensuring books is an array
     if (!Array.isArray(books)) {
         setBooks([]);
       }
@@ -72,7 +74,8 @@ export default function Books() {
 
   // Get unique authors for filters
   const authors = [...new Set(books.map(book => book.author))];
-  //const categories = [...new Set(books.map(book => book.category))];
+  const categories = [...new Set(books.map(book => book.category))];
+  const languages = [...new Set(books.map(book => book.language))];
 
   const filteredBooks = books
     .filter(book => 
@@ -80,7 +83,8 @@ export default function Books() {
       book.author.toLowerCase().includes(search.toLowerCase())
     )//search filter(match auth &title)
     .filter(book => !filterAuthor || book.author === filterAuthor)
-    //.filter(book => !filterCategory || book.category === filterCategory)
+    .filter(book => !filterCategory || book.category === filterCategory)
+    .filter(book => !filterLanguage || book.language === filterLanguage)
     .filter(book => (priceRange.min === 0 && priceRange.max === 0) || 
                     (book.price >= priceRange.min && book.price <= priceRange.max))
     .sort((a, b) => {
@@ -161,7 +165,7 @@ export default function Books() {
               </select>
             </div>
 
-            {/* <div>
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Filter by Category
               </label>
@@ -175,7 +179,23 @@ export default function Books() {
                   <option key={category} value={category}>{category}</option>
                 ))}
               </select>
-            </div> */}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Filter by Language
+              </label>
+              <select
+                className="w-full px-3 py-2 border rounded-lg"
+                value={filterLanguage}
+                onChange={(e) => setFilterLanguage(e.target.value)}
+              >
+                <option value="">All Languages</option>
+                {languages.map(language => (
+                  <option key={language} value={language}>{language}</option>
+                ))}
+              </select>
+            </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -246,13 +266,13 @@ export default function Books() {
               <div className="flex gap-2">
                 <button
                   onClick={() => navigate(`/books/${book._id}`)}
-                  className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                  className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transform hover:scale-105"
                 >
                   View Details
                 </button>
                 <button
                   onClick={() => addToCart(book)}
-                  className="bg-green-600 text-white p-2 rounded-lg hover:bg-green-700"
+                  className="bg-green-600 text-white p-2 rounded-lg hover:bg-green-700 transform hover:scale-105"
                   title="Add to Cart"
                 >
                   <ShoppingCart className="w-5 h-5" />

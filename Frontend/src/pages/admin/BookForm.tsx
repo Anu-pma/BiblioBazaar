@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 
 export type Book = {
     rating: any;
-    _id: string; // MongoDB uses `_id`
+    _id: string; // MongoDB uses _id
     url: string;
     title: string;
     author: string;
@@ -250,4 +250,3 @@ export default function BookForm() {
     </div>
   );
 }
-

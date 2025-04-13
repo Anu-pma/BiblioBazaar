@@ -12,6 +12,7 @@ export type Book = {
     author: string;
     price: number;
     desc: string;
+    category: string;
     language: string;
     ratings: { id: string; rating: number }[] | [];
     reviews: { id: string; review: string }[] | [];
@@ -81,7 +82,9 @@ export default function BookDetails() {
             <div className="flex justify-between items-start">
               <div>
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">{book.title}</h1>
-                <p className="text-xl text-gray-600 mb-4">by {book.author}</p>
+                <p className="text-xl text-gray-600 mb-4">by <strong>{book.author}</strong></p>
+                <p className="text-xl text-gray-600 mb-4">Category: <strong>{book.category}</strong> </p>
+                <p className="text-xl text-gray-600 mb-4">Language: <strong>{book.language}</strong> </p>
               </div>
               <button
                 onClick={handleFavoriteToggle}
@@ -104,11 +107,11 @@ export default function BookDetails() {
             <p className="text-gray-700 mb-8">{book.desc}</p>
 
             <div className="flex gap-4">
-              <button onClick={() => addToCart(book)} className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2">
+              <button onClick={() => addToCart(book)} className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2 transform hover:scale-105">
                 <ShoppingCart className="w-5 h-5" />
                 Add to Cart
               </button>
-              <button onClick={() => navigate('/cart')} className="bg-gray-100 text-gray-800 px-6 py-3 rounded-lg hover:bg-gray-200">
+              <button onClick={() => navigate('/cart')} className="bg-gray-100 text-gray-800 px-6 py-3 rounded-lg hover:bg-gray-200 transform hover:scale-105">
                 View Cart
               </button>
             </div>

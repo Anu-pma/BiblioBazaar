@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
@@ -9,7 +8,6 @@ import { ReviewsProvider } from './context/ReviewsContext';
 import { Header } from '@/components/layout/header';
 import  Footer  from '@/components/layout/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
-import Checkout from './pages/Checkout';
 
 // Auth Pages
 import SignIn from './pages/auth/SignIn';
@@ -26,7 +24,9 @@ import Deals from './pages/Deals';
 import Favorites from './pages/favorites';
 import UserDashboard from './pages/user/Dashboard';
 import Profile from './pages/user/Profile';
-
+import Checkout from './pages/Checkout';
+import  AuthorsPage  from './pages/AuthorsPage';
+import  CategoriesPage  from './pages/CategoriesPage';
 import FAQ from './pages/FAQ';
 import Shipping from './pages/Shipping';
 import Contact from './pages/Contact';
@@ -55,6 +55,8 @@ function App() {
                 <Route path="/signup" element={<SignUp />} />
                 <Route path="/books" element={<Books />} />
                 <Route path="/books/:id" element={<BookDetails />} />
+                <Route path="/authors" element={<AuthorsPage />} />
+                <Route path="/categories" element={<CategoriesPage />} />
                 <Route path="/new-releases" element={<NewReleases />} />
                 <Route path="/bestsellers" element={<Bestsellers />} />
                 <Route path="/deals" element={<Deals />} />
@@ -84,11 +86,11 @@ function App() {
                   </ProtectedRoute>
                 } />
                 <Route path="/checkout" element={
-                                  <ProtectedRoute>
-                                    <Checkout />
-                                  </ProtectedRoute>
-                                } />
-
+                  <ProtectedRoute>
+                    <Checkout />
+                  </ProtectedRoute>
+                } />
+                
                 
                 {/* Protected Admin Routes */}
                 <Route path="/admin" element={
