@@ -60,7 +60,8 @@ export default function BookForm() {
           price: data.data.price,
           desc: data.data.desc,
           url: data.data.url,
-          category: data.data.language,
+          category: data.data.category,
+          language: data.data.language,
           stock: 10 // Add stock management if needed
         });
       }
@@ -250,3 +251,4 @@ export default function BookForm() {
     </div>
   );
 }
+

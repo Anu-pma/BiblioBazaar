@@ -35,6 +35,7 @@ import Contact from './pages/Contact';
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminBooks from './pages/admin/Books';
 import BookForm from './pages/admin/BookForm';
+import ManageBooks from './pages/admin/ManageBooks';
 
 const userToken = localStorage.getItem("userToken") || ""; // Example retrieval
 const userId = localStorage.getItem("userId") || "";
@@ -63,6 +64,7 @@ function App() {
                 <Route path="/faq" element={<FAQ />} />
                 <Route path="/shipping" element={<Shipping />} />
                 <Route path="/contact" element={<Contact />} />
+        
                 
                 {/* Protected User Routes */}
                 <Route path="/dashboard" element={
@@ -103,11 +105,17 @@ function App() {
                     <AdminBooks />
                   </ProtectedRoute>
                 } />
+                <Route path="/admin/books/managebooks" element={
+                  <ProtectedRoute requireAdmin>
+                    <ManageBooks />
+                  </ProtectedRoute>
+                } />
                 <Route path="/admin/books/new" element={
                   <ProtectedRoute requireAdmin>
                     <BookForm />
                   </ProtectedRoute>
                 } />
+                
                 <Route path="/admin/books/edit/:id" element={
                   <ProtectedRoute requireAdmin>
                     <BookForm />

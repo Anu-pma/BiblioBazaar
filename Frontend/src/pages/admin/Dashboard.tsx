@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { BookOpen, ShoppingCart, Users, DollarSign } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import ManageBooks from './ManageBooks'; 
+
 import axios from 'axios';
 
 // Type definitions
@@ -101,7 +103,7 @@ export default function AdminDashboard() {
             <ActionCard to="/admin/books/new" color="blue" title="Add New Book" description="Add a new book to the store" />
             <ActionCard to="/admin/orders" color="green" title="Manage Orders" description="View and update order status" />
             <ActionCard to="/admin/users" color="purple" title="Manage Users" description="View and manage user accounts" />
-            <ActionCard to="/admin/books" color="yellow" title="Manage Books" description="Edit or remove existing books" />
+            <ActionCard to="/admin/books/managebooks" color="yellow" title="Manage Books" description="Edit or remove existing books" />
           </div>
         </div>
       </div>
