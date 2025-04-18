@@ -142,5 +142,19 @@ router.put("/update-address",authenticateToken,async(req,res)=>{
     // console.log("Body:", req.body);
 })
 
+router.get("/my-orders", authenticateToken, async (req, res) => {
+    try {
+      const { id } = req.headers;  
+      const user = await User.findById(id).populate("orders"); 
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+  
+      return res.status(200).json({ orders: user.orders });
+    } catch (error) {
+      console.error("Error fetching user orders:", error);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  });
 
 module.exports = router;

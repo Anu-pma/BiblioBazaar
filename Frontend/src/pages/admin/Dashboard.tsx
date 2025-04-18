@@ -101,8 +101,8 @@ export default function AdminDashboard() {
           <h2 className="text-xl font-bold mb-4">Quick Actions</h2>
           <div className="grid grid-cols-2 gap-4">
             <ActionCard to="/admin/books/new" color="blue" title="Add New Book" description="Add a new book to the store" />
-            <ActionCard to="/admin/orders" color="green" title="Manage Orders" description="View and update order status" />
-            <ActionCard to="/admin/users" color="purple" title="Manage Users" description="View and manage user accounts" />
+            <ActionCard to="/admin/books/manageorders" color="green" title="Manage Orders" description="View and update order status" />
+            <ActionCard to="/profile" color="purple" title="Manage Users" description="View and manage user accounts" />
             <ActionCard to="/admin/books/managebooks" color="yellow" title="Manage Books" description="Edit or remove existing books" />
           </div>
         </div>

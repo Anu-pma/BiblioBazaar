@@ -8,6 +8,8 @@ export type Book = {
     _id: string; // MongoDB uses `_id`
     url: string;
     title: string;
+    
+    
     author: string;
     price: number;
     desc: string;

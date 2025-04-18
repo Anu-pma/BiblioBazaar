@@ -3,15 +3,17 @@ const {authenticateToken}=require("./userAuth");
 const Book = require("../models/book");
 const Order = require("../models/order");
 const User = require("../models/user");
+const moment = require('moment');
 
 //place order
 router.post("/place-order",authenticateToken, async (req,res) =>{
     try {
         const {id} = req.headers;
-        const {order} = req.body; //user, book,status from models of order
+        const {order,total} = req.body; //user, book,status from models of order
+        let overallTotal = total;
         //looping for placing order
         for(const orderData of order){
-            const newOrder = new Order({user : id,book: orderData._id });
+            const newOrder = new Order({user : id,book: orderData._id,total:orderData.total ,status: "Order Placed"});
             const orderDataFromDb = await newOrder.save();//save order in db
 
             //saving order in user model
@@ -55,7 +57,7 @@ router.post("/get-order-history",authenticateToken, async (req,res) =>{
 
 
 //get all orders for admin
-router.post("/get-all-orders",authenticateToken, async (req,res) =>{
+router.get("/get-all-orders",authenticateToken, async (req,res) =>{
     try {
         const userData = await Order.find()
         //populate for knowing which user has ordered what
@@ -64,6 +66,7 @@ router.post("/get-all-orders",authenticateToken, async (req,res) =>{
         })
         .populate({
             path: "user",
+            select: "username",
         })
         .sort({ createdAt: -1});//sort on the basis of orders not timestamp so
 
@@ -79,22 +82,48 @@ router.post("/get-all-orders",authenticateToken, async (req,res) =>{
 });
 
 //updating orders by admin
-router.post("/update-status",authenticateToken, async (req,res) =>{
+// router.put("/update-status",authenticateToken, async (req,res) =>{
+//     try {
+//         const user = await User.findById(req.headers.id);
+//         const {id} = req.headers;//this id is of order not user
+//         await Order.findByIdAndUpdate(id,{ status: req.body.status});
+//         if(user.role !== "admin"){
+//             return  res.status(400).json({message:"You are not having access to perform admin work"})
+//         }
+//         return res.json({
+//             status: "Success",
+//             message: "Status updated successfully"
+//         });
+//     } catch (error) {
+//         console.log(error);
+//         return res.status(500).json({ message : "An error occured"});  
+//     }
+// });
+
+router.put("/update-status", authenticateToken, async (req, res) => {
     try {
-        const {id} = req.headers;//this id is of order not user
-        await Order.findByIdAndUpdate(id,{ status: req.body.status});
-        if(user.role !== "admin"){
-            return  res.status(400).json({message:"You are not having access to perform admin work"})
-        }
-        return res.json({
-            status: "Success",
-            message: "Status updated successfully"
-        });
+      const orderId = req.headers.id;
+      const userId = req.user.id; // assuming you set req.user in authenticateToken
+  
+      // Check if the user is admin first
+      const user = await User.findById(userId);
+      if (!user || user.role !== "admin") {
+        return res.status(403).json({ message: "You are not authorized to perform this action" });
+      }
+  
+      // Proceed with order update
+      await Order.findByIdAndUpdate(orderId, { status: req.body.status });
+  
+      return res.json({
+        status: "Success",
+        message: "Status updated successfully"
+      });
     } catch (error) {
-        console.log(error);
-        return res.status(500).json({ message : "An error occured"});  
+      console.log(error);
+      return res.status(500).json({ message: "An error occurred" });
     }
-});
+  });
+  
 
 //get order count for a particular user
 router.get("/order-count", authenticateToken, async (req, res) => {
@@ -137,26 +166,76 @@ router.get('/stats', async (req, res) => {
   });
   
   // GET /api/admin/orders/recent
-  router.get('/orders/recent', async (req, res) => {
+//   router.get('/orders/recent', async (req, res) => {
+//     try {
+//       const recentOrders = await Order.find({})
+//         .sort({ createdAt: -1 })
+//         .limit(5)
+//         .populate('user', 'name');
+  
+//       const formatted = recentOrders.map(order => ({
+//         _id: order._id,
+//         user: order.user?.name || 'Unknown',
+//         total: order.total,
+//         status: order.status,
+//         date: order.createdAt,
+//       }));
+  
+//       res.json(formatted);
+//     } catch (err) {
+//       console.error(err);
+//       res.status(500).json({ error: 'Failed to fetch recent orders' });
+//     }
+//   });
+
+// router.get('/orders/recent', async (req, res) => {
+//     try {
+//       const recentOrders = await Order.find({})
+//         .sort({ createdAt: -1 })
+//         .limit(5)
+//         .populate('user', 'username');
+  
+//       console.log('Populated Orders:', recentOrders); // 🔍 Inspect this!
+  
+//       const formatted = recentOrders.map(order => ({
+//         _id: order._id,
+//         user: order.user?.username || 'Unknown', // fallback only if name is missing
+//         total: `$${(order.total || 0).toFixed(2)}`,
+//         status: order.status,
+//         date: order.createdAt,
+//       }));
+  
+//       res.json(formatted);
+//     } catch (err) {
+//       console.error('Error in /orders/recent:', err);
+//       res.status(500).json({ error: 'Failed to fetch recent orders' });
+//     }
+//   });
+
+router.get('/orders/recent', async (req, res) => {
     try {
       const recentOrders = await Order.find({})
         .sort({ createdAt: -1 })
         .limit(5)
-        .populate('user', 'name');
+        .populate('user', 'username');
+  
+      console.log('Populated Orders:', recentOrders); // See what comes in
   
       const formatted = recentOrders.map(order => ({
         _id: order._id,
-        user: order.user?.name || 'Unknown',
-        total: order.total,
-        status: order.status,
-        date: order.createdAt,
+        user: order.user?.username || 'Unknown',
+        total: `$${(order.total || 0).toFixed(2)}`,
+        status: order.status || 'Unknown',
+        date: moment(order.createdAt).format('YYYY-MM-DD HH:mm'),
       }));
   
       res.json(formatted);
     } catch (err) {
-      console.error(err);
+      console.error('Error in /orders/recent:', err.message);
       res.status(500).json({ error: 'Failed to fetch recent orders' });
     }
   });
+  
+  
 
 module.exports = router;

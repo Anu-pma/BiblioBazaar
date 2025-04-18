@@ -36,6 +36,7 @@ import AdminDashboard from './pages/admin/Dashboard';
 import AdminBooks from './pages/admin/Books';
 import BookForm from './pages/admin/BookForm';
 import ManageBooks from './pages/admin/ManageBooks';
+import ManageOrders from './pages/admin/ManageOrders';
 
 const userToken = localStorage.getItem("userToken") || ""; // Example retrieval
 const userId = localStorage.getItem("userId") || "";
@@ -108,6 +109,11 @@ function App() {
                 <Route path="/admin/books/managebooks" element={
                   <ProtectedRoute requireAdmin>
                     <ManageBooks />
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/books/manageorders" element={
+                  <ProtectedRoute requireAdmin>
+                    <ManageOrders />
                   </ProtectedRoute>
                 } />
                 <Route path="/admin/books/new" element={

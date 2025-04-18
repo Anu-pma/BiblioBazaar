@@ -69,11 +69,18 @@ export default function Checkout() {
       const userId = localStorage.getItem('userId');
 
       const orderItems = items.map(item => ({
-        _id: item._id
+        _id: item._id,
+        quantity: item.quantity,
+        price: item.price,
+        total: item.price * item.quantity 
+        
       }));
 
+      const overallTotal = orderItems.reduce((sum, item) => sum + item.total, 0);
+
       const response = await axios.post('http://localhost:3000/api/v1/place-order', {
-        order: orderItems
+        order: orderItems,
+        total: overallTotal // send overall total
       }, {
         headers: {
           'Authorization': `Bearer ${token}`,

@@ -60,7 +60,7 @@ export function Header() {
             </div>
           ) : (
             // If user is signed in, show Profile Icon
-            <Link to= "/dashboard">
+            <Link to={user.role === 'admin' ? '/admin' : '/dashboard'}>
               <UserCircle className="w-8 h-8 text-gray-600 hover:text-blue-500" />
             </Link>
           )}
