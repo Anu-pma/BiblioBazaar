@@ -60,7 +60,7 @@ router.post("/get-order-history",authenticateToken, async (req,res) =>{
         const {id} = req.headers;
         const userData = await User.findById(id).populate({
             path: "orders",
-            populate: { path: "book"}
+            populate: { path: "items.book"}
         }); 
 
         const ordersData = userData.orders.reverse();
