@@ -1,4 +1,3 @@
-import React from 'react';
 import { Trash2, ShoppingCart } from 'lucide-react';
 import { useFavorites } from '../context/FavoritesContext';
 import { useCart } from '../context/CartContext';
@@ -6,8 +5,34 @@ import { useNavigate } from 'react-router-dom';
 
 export default function Favorites() {
   const { favorites, removeFromFavorites } = useFavorites();
-  const { addToCart } = useCart();
+  const {
+    items,
+    addToCart,
+    removeFromCart,
+    updateQuantity,
+  } = useCart();
   const navigate = useNavigate();
+
+  // Helpers
+  const bookInCart = (bookId: string) =>
+    items.find(item => item._id === bookId);
+
+  const getItemQuantity = (bookId: string) =>
+    items.find(item => item._id === bookId)?.quantity || 0;
+
+  const increaseQuantity = (book: any) => {
+    const currentQty = getItemQuantity(book._id);
+    updateQuantity(book._id, currentQty + 1);
+  };
+
+  const decreaseQuantity = (bookId: string) => {
+    const currentQty = getItemQuantity(bookId);
+    if (currentQty === 1) {
+      removeFromCart(bookId);
+    } else {
+      updateQuantity(bookId, currentQty - 1);
+    }
+  };
 
   if (favorites.length === 0) {
     return (
@@ -40,15 +65,36 @@ export default function Favorites() {
               <h3 className="text-lg font-semibold mb-2">{book.title}</h3>
               <p className="text-gray-600 mb-2">{book.author}</p>
               <p className="text-xl font-bold mb-4">${book.price.toFixed(2)}</p>
-              
-              <div className="flex gap-2">
-                <button
-                  onClick={() => addToCart(book)}
-                  className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
-                >
-                  <ShoppingCart size={20} />
-                  Add to Cart
-                </button>
+
+              <div className="flex gap-2 items-center">
+                {bookInCart(book._id) ? (
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => decreaseQuantity(book._id)}
+                      className="bg-gray-200 px-3 py-1 rounded-lg text-lg"
+                    >
+                      -
+                    </button>
+                    <span className="font-semibold">
+                      {getItemQuantity(book._id)}
+                    </span>
+                    <button
+                      onClick={() => increaseQuantity(book)}
+                      className="bg-gray-200 px-3 py-1 rounded-lg text-lg"
+                    >
+                      +
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => addToCart(book)}
+                    className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
+                  >
+                    <ShoppingCart size={20} />
+                    Add to Cart
+                  </button>
+                )}
+
                 <button
                   onClick={() => removeFromFavorites(book._id)}
                   className="bg-red-100 text-red-600 p-2 rounded-lg hover:bg-red-200"

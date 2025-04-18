@@ -1,7 +1,5 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import axios from 'axios';
-// import { Book, CartItem } from '../types';
 
 export type Book = {
     rating: any;
@@ -33,6 +31,10 @@ interface CartContextType {
   removeFromCart: (bookId: string) => void;
   updateQuantity: (bookId: string, quantity: number) => void;
   clearCart: () => void;
+  getItemQuantity: (bookId: string) => number;
+  increaseQuantity: (book: Book) => void;
+  decreaseQuantity: (bookId: string) => void;
+
   total: number;
 }
 
@@ -113,6 +115,31 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
   };
 
+  const getItemQuantity = (bookId: string) => {
+    const item = items.find(i => i._id === bookId);
+    return item ? item.quantity : 0;
+  };
+
+  const increaseQuantity = (book: Book) => {
+    const item = items.find(i => i._id === book._id);
+    if (item) {
+      updateQuantity(book._id, item.quantity + 1);
+    } else {
+      addToCart(book); // adds with quantity 1
+    }
+  };
+
+  const decreaseQuantity = (bookId: string) => {
+    const item = items.find(i => i._id === bookId);
+    if (item) {
+      if (item.quantity === 1) {
+        removeFromCart(bookId);
+      } else {
+        updateQuantity(bookId, item.quantity - 1);
+      }
+    }
+  };
+
   const clearCart = () => {
     setItems([]); // You can also implement a backend call if needed
   };
@@ -121,7 +148,17 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return (
     <CartContext.Provider
-      value={{ items, addToCart, removeFromCart, updateQuantity, clearCart, total }}
+      value={{
+        items,
+        addToCart,
+        removeFromCart,
+        updateQuantity,
+        clearCart,
+        total,
+        getItemQuantity,
+        increaseQuantity,
+        decreaseQuantity
+      }}
     >
       {children}
     </CartContext.Provider>

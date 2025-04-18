@@ -25,7 +25,7 @@ export default function BookDetails() {
   const navigate = useNavigate();//hook to nav btw pages
   const { addToCart } = useCart();
   const { addToFavorites, isFavorite, removeFromFavorites } = useFavorites();
-  
+  const isAuthenticated = localStorage.getItem('token');
   const [book, setBook] = useState<Book | null>(null);//state to store book details
   const [loading, setLoading] = useState(true);
 
@@ -63,13 +63,29 @@ export default function BookDetails() {
   if (loading) return <div>Loading...</div>;
   if (!book) return <div>Book not found.</div>;
 
-  const handleFavoriteToggle = () => {
-    if (isFavorite(book._id)) {
-      removeFromFavorites(book._id);
-    } else {
-      addToFavorites(book);
-    }
-  };
+  const handleFavoriteToggle = (book: Book, e: React.MouseEvent) => {
+      e.stopPropagation(); // ensures clicking fav button only toggles fav status without triggering any parent click handlers
+      if (!isAuthenticated) {
+        // Redirect to sign-in page if user is not authenticated
+        navigate('/signin');
+        return;
+      }
+      if (isFavorite(book._id)) {
+        removeFromFavorites(book._id);
+      } else {
+        addToFavorites(book);
+      }
+    };
+
+    const handleAddToCart = (book: Book) => {
+        if (!isAuthenticated) {
+          // Redirect to sign-in page if user is not authenticated
+          navigate('/signin');
+          return;
+        }
+        addToCart(book);
+      };
+    
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -87,7 +103,10 @@ export default function BookDetails() {
                 <p className="text-xl text-gray-600 mb-4">Language: <strong>{book.language}</strong> </p>
               </div>
               <button
-                onClick={handleFavoriteToggle}
+                onClick={(e) => {
+                  // If authenticated, toggle favorite logic
+                  handleFavoriteToggle(book, e); 
+                }}
                 className={`p-2 rounded-full ${isFavorite(book._id) ? 'text-red-500' : 'text-gray-400'} hover:bg-gray-100`}
               >
                 <Heart className="w-6 h-6" fill={isFavorite(book._id) ? 'currentColor' : 'none'} />
@@ -107,10 +126,24 @@ export default function BookDetails() {
             <p className="text-gray-700 mb-8">{book.desc}</p>
 
             <div className="flex gap-4">
-              <button onClick={() => addToCart(book)} className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2 transform hover:scale-105">
-                <ShoppingCart className="w-5 h-5" />
-                Add to Cart
-              </button>
+              <button
+              onClick={(e) => {
+                // Check if user is authenticated
+                if (!isAuthenticated) {
+                  // If not authenticated, redirect to sign-in page
+                  navigate('/signin');
+                  return;
+                }
+
+                // If authenticated, add item to cart
+                addToCart(book);
+              }}
+              className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2 transform hover:scale-105"
+            >
+              <ShoppingCart className="w-5 h-5" />
+              Add to Cart
+            </button>
+
               <button onClick={() => navigate('/cart')} className="bg-gray-100 text-gray-800 px-6 py-3 rounded-lg hover:bg-gray-200 transform hover:scale-105">
                 View Cart
               </button>

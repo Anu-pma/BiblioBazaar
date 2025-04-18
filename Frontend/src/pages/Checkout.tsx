@@ -58,9 +58,16 @@ export default function Checkout() {
     setError('');
 
     // Phone validation
-    if (!/^\d{10}$/.test(shippingDetails.phone)) {
-      setError("Please enter a valid 10-digit phone number.");
+    const phoneRegex = /^[+]?[0-9]{10,15}$/;
+
+    if (!phoneRegex.test(shippingDetails.phone)) {
+      setError("Please enter a valid phone number.");
       setLoading(false);
+      
+      setTimeout(() => {
+        setError('');
+      }, 3000); 
+      
       return;
     }
 
@@ -121,7 +128,7 @@ export default function Checkout() {
           <h2 className="text-2xl font-bold mb-4">Order Placed Successfully!</h2>
           <p className="text-gray-600 mb-8">Thank you for your purchase.</p>
           <button
-            onClick={() => navigate('/orders')}
+            onClick={() => navigate('/myorders')}
             className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
           >
             View Orders
