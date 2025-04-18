@@ -101,7 +101,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (data.role === 'admin') {
         navigate('/admin');
       } else {
-        navigate('/dashboard');
+        navigate('/books');
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to sign in');

@@ -72,11 +72,10 @@ export default function Checkout() {
         _id: item._id,
         quantity: item.quantity,
         price: item.price,
-        total: item.price * item.quantity 
         
       }));
 
-      const overallTotal = orderItems.reduce((sum, item) => sum + item.total, 0);
+      const overallTotal = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
       const response = await axios.post('http://localhost:3000/api/v1/place-order', {
         order: orderItems,

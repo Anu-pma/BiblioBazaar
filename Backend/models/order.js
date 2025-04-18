@@ -4,17 +4,31 @@ const order = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "user",
     },
-    book: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "books",
-    },
+    items:[
+        {
+            book: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "books",
+            },
+            quantity:{
+                type:Number,
+                default:1
+            },
+            price:{
+                type:Number,
+                required:true
+            }
+            
+        }
+    ],
     status: {
         type: String,
         default: "Order Placed",
-        enum:["Order Placed" , "Out for Delivery,Delivered,Canceled"],
+        enum:["Order Placed" , "Out for Delivery","Delivered","Canceled"],
     },
     total:{
         type:Number,
+        required:true
     }
   
 },

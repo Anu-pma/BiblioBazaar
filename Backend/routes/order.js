@@ -6,34 +6,53 @@ const User = require("../models/user");
 const moment = require('moment');
 
 //place order
-router.post("/place-order",authenticateToken, async (req,res) =>{
-    try {
-        const {id} = req.headers;
-        const {order,total} = req.body; //user, book,status from models of order
-        let overallTotal = total;
-        //looping for placing order
-        for(const orderData of order){
-            const newOrder = new Order({user : id,book: orderData._id,total:orderData.total ,status: "Order Placed"});
-            const orderDataFromDb = await newOrder.save();//save order in db
 
-            //saving order in user model
-            await User.findByIdAndUpdate(id, {
-                $push: {orders: orderDataFromDb._id}
-            });
-            //clearing cart
-            await User.findByIdAndUpdate(id,{
-                $pull: {cart: orderData._id}
-            });
-        }
-        return res.json({
-            status: "Success",
-            message: "Order Placed Successfully"
-        });
+router.post("/place-order", authenticateToken, async (req, res) => {
+    try {
+      const { id } = req.headers;
+      const { order, total } = req.body; // order is an array of books
+  
+      if (!order || !total) {
+        return res.status(400).json({ message: "Missing order data or total." });
+      }
+  
+      let overallTotal = total;
+  
+      // Create a new order with items as an array
+      const newOrder = new Order({
+        user: id,
+        items: order.map(orderData => ({
+          book: orderData._id,
+          quantity: orderData.quantity,
+          price: orderData.price
+        })),
+        total: overallTotal,
+        status: "Order Placed"
+      });
+  
+      // Save the order to the database
+      const savedOrder = await newOrder.save();
+  
+      // Save order in user model
+      await User.findByIdAndUpdate(id, {
+        $push: { orders: savedOrder._id }
+      });
+  
+      // Clear the user's cart
+      await User.findByIdAndUpdate(id, {
+        $pull: { cart: { $in: order.map(item => item._id) } }
+      });
+  
+      return res.json({
+        status: "Success",
+        message: "Order Placed Successfully"
+      });
     } catch (error) {
-        console.log(error);
-        return res.status(500).json({ message : "An error occured"});  
+      console.error('Error placing order:', error);
+      return res.status(500).json({ message: "An error occurred" });
     }
-});
+  });
+  
 
 //orders of a user
 router.post("/get-order-history",authenticateToken, async (req,res) =>{
@@ -62,7 +81,8 @@ router.get("/get-all-orders",authenticateToken, async (req,res) =>{
         const userData = await Order.find()
         //populate for knowing which user has ordered what
         .populate({
-            path: "book",
+            path: "items.book",
+            select: "title",
         })
         .populate({
             path: "user",
@@ -70,6 +90,7 @@ router.get("/get-all-orders",authenticateToken, async (req,res) =>{
         })
         .sort({ createdAt: -1});//sort on the basis of orders not timestamp so
 
+        console.log("Populated Orders:", userData); 
         return res.json({
             status: "Success",
             data: userData,
@@ -81,24 +102,42 @@ router.get("/get-all-orders",authenticateToken, async (req,res) =>{
     }
 });
 
+router.get('/orders/recent', async (req, res) => {
+    try {
+      const recentOrders = await Order.find({})
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .populate('user', 'username')
+        .populate('items.book', 'title price'); // include price if not already populated
+  
+      const formatted = recentOrders.map(order => {
+        // Manually calculate total if not present
+        const totalAmount = order.items?.reduce((acc, item) => {
+          const price = item.book?.price || 0;
+          const qty = item.quantity || 1;
+          return acc + price * qty;
+        }, 0);
+  
+        return {
+          _id: order._id,
+          user: order.user?.username || 'Unknown',
+          total: `$${totalAmount.toFixed(2)}`,
+          status: order.status || 'Unknown',
+          date: moment(order.createdAt).format('YYYY-MM-DD HH:mm'),
+        };
+      });
+  
+      res.json(formatted);
+    } catch (err) {
+      console.error('Error in /orders/recent:', err.message);
+      res.status(500).json({ error: 'Failed to fetch recent orders' });
+    }
+  });
+  
+  
+    
+
 //updating orders by admin
-// router.put("/update-status",authenticateToken, async (req,res) =>{
-//     try {
-//         const user = await User.findById(req.headers.id);
-//         const {id} = req.headers;//this id is of order not user
-//         await Order.findByIdAndUpdate(id,{ status: req.body.status});
-//         if(user.role !== "admin"){
-//             return  res.status(400).json({message:"You are not having access to perform admin work"})
-//         }
-//         return res.json({
-//             status: "Success",
-//             message: "Status updated successfully"
-//         });
-//     } catch (error) {
-//         console.log(error);
-//         return res.status(500).json({ message : "An error occured"});  
-//     }
-// });
 
 router.put("/update-status", authenticateToken, async (req, res) => {
     try {
@@ -166,51 +205,6 @@ router.get('/stats', async (req, res) => {
   });
   
   // GET /api/admin/orders/recent
-//   router.get('/orders/recent', async (req, res) => {
-//     try {
-//       const recentOrders = await Order.find({})
-//         .sort({ createdAt: -1 })
-//         .limit(5)
-//         .populate('user', 'name');
-  
-//       const formatted = recentOrders.map(order => ({
-//         _id: order._id,
-//         user: order.user?.name || 'Unknown',
-//         total: order.total,
-//         status: order.status,
-//         date: order.createdAt,
-//       }));
-  
-//       res.json(formatted);
-//     } catch (err) {
-//       console.error(err);
-//       res.status(500).json({ error: 'Failed to fetch recent orders' });
-//     }
-//   });
-
-// router.get('/orders/recent', async (req, res) => {
-//     try {
-//       const recentOrders = await Order.find({})
-//         .sort({ createdAt: -1 })
-//         .limit(5)
-//         .populate('user', 'username');
-  
-//       console.log('Populated Orders:', recentOrders); // 🔍 Inspect this!
-  
-//       const formatted = recentOrders.map(order => ({
-//         _id: order._id,
-//         user: order.user?.username || 'Unknown', // fallback only if name is missing
-//         total: `$${(order.total || 0).toFixed(2)}`,
-//         status: order.status,
-//         date: order.createdAt,
-//       }));
-  
-//       res.json(formatted);
-//     } catch (err) {
-//       console.error('Error in /orders/recent:', err);
-//       res.status(500).json({ error: 'Failed to fetch recent orders' });
-//     }
-//   });
 
 router.get('/orders/recent', async (req, res) => {
     try {
@@ -224,7 +218,7 @@ router.get('/orders/recent', async (req, res) => {
       const formatted = recentOrders.map(order => ({
         _id: order._id,
         user: order.user?.username || 'Unknown',
-        total: `$${(order.total || 0).toFixed(2)}`,
+        total: order.total ? `$${order.total.toFixed(2)}` : '$0.00',
         status: order.status || 'Unknown',
         date: moment(order.createdAt).format('YYYY-MM-DD HH:mm'),
       }));
@@ -235,6 +229,7 @@ router.get('/orders/recent', async (req, res) => {
       res.status(500).json({ error: 'Failed to fetch recent orders' });
     }
   });
+
   
   
 

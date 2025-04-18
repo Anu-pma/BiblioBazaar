@@ -11,10 +11,13 @@ interface Order {
   user?: {
     username?: string;
   };
-  book?: {
-    title?: string;
-    price?: number;
-  };
+  items: {
+    book: {
+      title?: string;
+      price?: number;
+    };
+    quantity: number;
+  }[];
   status: string;
   total: number;
   createdAt: string;
@@ -38,6 +41,7 @@ function ManageOrders() {
     pendingOrders: 0,
     deliveredOrders: 0
   });
+  const [showBooks, setShowBooks] = useState<{ [key: string]: boolean }>({});
 
   const fetchOrders = async () => {
     try {
@@ -102,10 +106,17 @@ function ManageOrders() {
     }
   };
 
+  const toggleShowBooks = (orderId: string) => {
+    setShowBooks((prev) => ({
+      ...prev,
+      [orderId]: !prev[orderId],
+    }));
+  };
+
   const filteredOrders = orders.filter(order => {
     const matchesSearch = order.user?.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order._id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.book?.title?.toLowerCase().includes(searchTerm.toLowerCase());
+      order.items.some(item => item.book?.title?.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -184,7 +195,7 @@ function ManageOrders() {
                 <tr>
                   <TableHeader>Order ID</TableHeader>
                   <TableHeader>Customer</TableHeader>
-                  <TableHeader>Book</TableHeader>
+                  <TableHeader>Books</TableHeader>
                   <TableHeader>Total</TableHeader>
                   <TableHeader>Status</TableHeader>
                   <TableHeader>Date</TableHeader>
@@ -209,7 +220,37 @@ function ManageOrders() {
                         <span className="text-sm font-medium text-gray-900">#{order._id.slice(-6)}</span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{order.user?.username || "Unknown"}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{order.book?.title || "Untitled"}</td>
+
+                      {/* Display Books */}
+                    {/* Display Books */}
+<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+  {order.items.length > 1 ? (
+    <>
+      <div>{order.items[0]?.book?.title} x{order.items[0]?.quantity}</div>
+      <button
+        onClick={() => toggleShowBooks(order._id)}
+        className="text-blue-500 text-sm mt-2"
+      >
+        {showBooks[order._id] ? 'Hide Books' : 'View All Books'}
+      </button>
+      {showBooks[order._id] && (
+        <ul className="mt-2 text-sm text-gray-500">
+          {order.items.map((item, index) => (
+            <li key={index}>
+              {/* Safe Access: Ensure item.book is not undefined */}
+              {item?.book ? `${item.book?.title} x${item.quantity}` : 'No book information'}
+            </li>
+          ))}
+        </ul>
+      )}
+    </>
+  ) : (
+    // Safe Access: Ensure item.book is not undefined
+    <div>{order.items[0]?.book ? `${order.items[0]?.book?.title} x${order.items[0]?.quantity}` : 'No book information'}</div>
+  )}
+</td>
+
+
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${order.total?.toFixed(2)}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
@@ -250,21 +291,21 @@ function ManageOrders() {
 
 // Reusable Components
 const StatCard = ({ icon, title, value, color }: { icon: React.ReactNode; title: string; value: string | number; color: string }) => (
-  <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-    <div className="flex items-center gap-4">
-      <div className={`bg-${color}-50 p-3 rounded-lg`}>
-        {icon}
-      </div>
-      <div>
-        <p className="text-sm font-medium text-gray-500">{title}</p>
-        <h3 className="text-2xl font-bold text-gray-900">{value}</h3>
-      </div>
+  <div className={`flex items-center p-4 rounded-lg shadow-lg bg-${color}-100`}>
+    <div className={`bg-${color}-500 p-2 rounded-lg`}>
+      {icon}
+    </div>
+    <div className="ml-4">
+      <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
+      <p className="text-lg font-bold text-gray-800">{value}</p>
     </div>
   </div>
 );
 
 const TableHeader = ({ children }: { children: React.ReactNode }) => (
-  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{children}</th>
+  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+    {children}
+  </th>
 );
 
 export default ManageOrders;

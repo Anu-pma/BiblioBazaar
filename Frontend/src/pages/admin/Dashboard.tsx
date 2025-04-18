@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { BookOpen, ShoppingCart, Users, DollarSign } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import ManageBooks from './ManageBooks'; 
-
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useAuth } from '@/context/AuthContext';
 
 // Type definitions
 type Stats = {
@@ -28,6 +27,14 @@ export default function AdminDashboard() {
     totalUsers: 0,
     revenue: 0,
   });
+
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    signOut(); // Clear user context & token
+    navigate('/signin'); // Redirect to sign in
+  };
 
   const [recentOrders, setRecentOrders] = useState<Order[]>([]);
 
@@ -81,7 +88,7 @@ export default function AdminDashboard() {
                   <tr key={order._id} className="border-b">
                     <td className="py-3">#{order._id}</td>
                     <td>{order.user}</td>
-                    <td>${typeof order.total === 'number' ? order.total.toFixed(2) : '0.00'}</td>
+                    <td>{`$${typeof order.total === 'number' ? order.total.toFixed(2) : '0.00'}`}</td>
                     <td>
                       <span className={`px-2 py-1 rounded-full text-sm ${
                         order.status === 'Completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
@@ -100,10 +107,37 @@ export default function AdminDashboard() {
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-bold mb-4">Quick Actions</h2>
           <div className="grid grid-cols-2 gap-4">
-            <ActionCard to="/admin/books/new" color="blue" title="Add New Book" description="Add a new book to the store" />
-            <ActionCard to="/admin/books/manageorders" color="green" title="Manage Orders" description="View and update order status" />
-            <ActionCard to="/profile" color="purple" title="Manage Users" description="View and manage user accounts" />
-            <ActionCard to="/admin/books/managebooks" color="yellow" title="Manage Books" description="Edit or remove existing books" />
+            <Link
+              to="/admin/books/new"
+              className="p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+            >
+              <h3 className="font-semibold">Add New Book</h3>
+              <p className="text-sm text-gray-600">Add a new book to the store</p>
+            </Link>
+
+            <Link
+              to="/admin/books/manageorders"
+              className="p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
+            >
+              <h3 className="font-semibold">Manage Orders</h3>
+              <p className="text-sm text-gray-600">View and update order status</p>
+            </Link>
+
+            <Link
+              to="/admin/books/managebooks"
+              className="p-4 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors"
+            >
+              <h3 className="font-semibold">Manage Books</h3>
+              <p className="text-sm text-gray-600">Edit or remove existing books</p>
+            </Link>
+
+            <div
+              onClick={handleLogout}
+              className="p-4 bg-red-50 rounded-lg hover:bg-red-100 transition-colors cursor-pointer"
+            >
+              <h3 className="font-semibold">Sign Out</h3>
+              <p className="text-sm text-gray-600">Log out of the admin panel</p>
+            </div>
           </div>
         </div>
       </div>
@@ -122,11 +156,4 @@ const DashboardCard = ({ label, value, icon }: { label: string; value: number | 
       {icon}
     </div>
   </div>
-);
-
-const ActionCard = ({ to, color, title, description }: { to: string; color: string; title: string; description: string }) => (
-  <Link to={to} className={`p-4 bg-${color}-50 rounded-lg hover:bg-${color}-100 transition-colors`}>
-    <h3 className="font-semibold">{title}</h3>
-    <p className="text-sm text-gray-600">{description}</p>
-  </Link>
 );
