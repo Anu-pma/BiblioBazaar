@@ -12,6 +12,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 // Auth Pages
 import SignIn from './pages/auth/SignIn';
 import SignUp from './pages/auth/SignUp';
+import {GoogleOAuthProvider} from '@react-oauth/google'
 
 // User Pages
 import Books from './pages/books';
@@ -37,6 +38,8 @@ import BookForm from './pages/admin/BookForm';
 import ManageBooks from './pages/admin/ManageBooks';
 import ManageOrders from './pages/admin/ManageOrders';
 
+const GOOGLE_CLIENT_ID = "604623369554-7snrkl4m14qqrgvgo6hntcu63ucp06j8.apps.googleusercontent.com";
+
 function AppContent() {
   const location = useLocation();
   const { user } = useAuth();
@@ -48,8 +51,9 @@ function AppContent() {
     return <Navigate to="/admin" replace />;
   }
 
+
   return (
-    <>
+    <><GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <Toaster position="top-right" />
       {!isAdminRoute && <Header />}
       
@@ -126,6 +130,7 @@ function AppContent() {
       </Routes>
 
       {!isAdminRoute && <Footer />}
+      </GoogleOAuthProvider>
     </>
   );
 }

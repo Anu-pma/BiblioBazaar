@@ -8,6 +8,7 @@ const Books= require("./routes/book")
 const Favourite = require("./routes/favourite");
 const Cart = require("./routes/cart")
 const Order = require("./routes/order")
+const GoogleAuth=require("./routes/googleAuth")
 
 app.use(cors({
     origin: "http://localhost:5173", 
@@ -22,6 +23,7 @@ app.use("/api/v1",Books);
 app.use("/api/v1",Favourite);
 app.use("/api/v1",Cart);
 app.use("/api/v1",Order);
+app.use("/api/v1",GoogleAuth);
 //creating port
 app.listen(process.env.PORT,() => {
     console.log(`Server Started ${process.env.PORT}`);

@@ -11,6 +11,15 @@ interface User {
   address?: string;
 }
 
+// interface AuthContextType {
+//   user: User | null;
+//   signIn: (username: string, password: string) => Promise<void>;
+//   signUp: (username: string, password: string, email: string, address?: string) => Promise<void>;
+//   updateAddress: (address: string) => Promise<void>;
+//   signOut: () => void;
+//   isLoading: boolean;
+// }
+
 interface AuthContextType {
   user: User | null;
   signIn: (username: string, password: string) => Promise<void>;
@@ -18,7 +27,9 @@ interface AuthContextType {
   updateAddress: (address: string) => Promise<void>;
   signOut: () => void;
   isLoading: boolean;
+  signInWithGoogle: (token: string, userData: User) => Promise<void>;
 }
+
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -66,6 +77,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const signInWithGoogle = async (token: string, userData: User) => {
+    localStorage.setItem('token', token);
+    localStorage.setItem('userId', userData.id);
+  
+    setUser(userData);
+    toast.success('Successfully signed in with Google!');
+    navigate('/books');
   };
 
   const signIn = async (username: string, password: string) => {
@@ -185,7 +205,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, signIn, signUp, updateAddress, signOut, isLoading }}>
+    <AuthContext.Provider value={{ user, signIn, signUp, updateAddress, signOut, isLoading,signInWithGoogle  }}>
       {children}
     </AuthContext.Provider>
   );
