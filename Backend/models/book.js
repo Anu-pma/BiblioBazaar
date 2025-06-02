@@ -19,11 +19,11 @@ const books = new mongoose.Schema({
     stock: {
       type: Number,
       required: true,
-  },
-  quantity: {
-    type: Number,
-    required: false,
-},
+    },
+    quantity: {
+      type: Number,
+      required: false,
+    },
     desc: {
         type: String,
         required: true,
@@ -31,7 +31,7 @@ const books = new mongoose.Schema({
     category: {
       type: String,
       required: true,
-  },
+    },
     language: {
         type: String,
         required: true,
@@ -53,7 +53,7 @@ const books = new mongoose.Schema({
           },
         ],
         default: [], // Default to an empty array
-      },
+    },
       reviews: {
         type: [
           {

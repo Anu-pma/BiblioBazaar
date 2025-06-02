@@ -6,7 +6,6 @@ const User = require("../models/user");
 const moment = require('moment');
 
 //place order
-
 router.post("/place-order", authenticateToken, async (req, res) => {
     try {
       const { id } = req.headers;
@@ -51,29 +50,47 @@ router.post("/place-order", authenticateToken, async (req, res) => {
       console.error('Error placing order:', error);
       return res.status(500).json({ message: "An error occurred" });
     }
-  });
-  
-
-//orders of a user
-router.post("/get-order-history",authenticateToken, async (req,res) =>{
-    try {
-        const {id} = req.headers;
-        const userData = await User.findById(id).populate({
-            path: "orders",
-            populate: { path: "items.book"}
-        }); 
-
-        const ordersData = userData.orders.reverse();
-        return res.json({
-            status: "Success",
-            data: ordersData
-        });
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({ message : "An error occured"});  
-    }
 });
+  
+//orders of a user
+router.post("/get-order-history", authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.headers;
 
+    const userData = await User.findById(id).populate({
+      path: "orders",
+      populate: { path: "items.book" },
+    });
+
+    if (!userData) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const ordersData = userData.orders
+      .map(order => {
+        const itemsWithFlags = order.items.map(item => ({
+          book: item.book,
+          quantity: item.quantity,
+          reviewed: item.reviewed === true, // ensure boolean
+          rated: item.rated === true,
+        }));
+
+        return {
+          ...order.toObject(),
+          items: itemsWithFlags,
+        };
+      })
+      .reverse();
+
+    return res.json({
+      status: "Success",
+      data: ordersData,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "An error occurred" });
+  }
+});
 
 //get all orders for admin
 router.get("/get-all-orders",authenticateToken, async (req,res) =>{
@@ -132,13 +149,9 @@ router.get('/orders/recent', async (req, res) => {
       console.error('Error in /orders/recent:', err.message);
       res.status(500).json({ error: 'Failed to fetch recent orders' });
     }
-  });
-  
-  
-    
+});
 
 //updating orders by admin
-
 router.put("/update-status", authenticateToken, async (req, res) => {
     try {
       const orderId = req.headers.id;
@@ -161,8 +174,7 @@ router.put("/update-status", authenticateToken, async (req, res) => {
       console.log(error);
       return res.status(500).json({ message: "An error occurred" });
     }
-  });
-  
+});
 
 //get order count for a particular user
 router.get("/order-count", authenticateToken, async (req, res) => {
@@ -202,10 +214,9 @@ router.get('/stats', async (req, res) => {
       console.error(err);
       res.status(500).json({ error: 'Failed to fetch dashboard stats' });
     }
-  });
+});
   
-  // GET /api/admin/orders/recent
-
+// GET /api/admin/orders/recent
 router.get('/orders/recent', async (req, res) => {
     try {
       const recentOrders = await Order.find({})
@@ -228,9 +239,6 @@ router.get('/orders/recent', async (req, res) => {
       console.error('Error in /orders/recent:', err.message);
       res.status(500).json({ error: 'Failed to fetch recent orders' });
     }
-  });
-
-  
-  
+});
 
 module.exports = router;

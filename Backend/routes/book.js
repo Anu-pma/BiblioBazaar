@@ -149,67 +149,100 @@ router.get("/view-ratings-reviews", authenticateToken, async (req, res) => {
     }
 });
 
-
 // User Rating for a Book
 router.post("/add-rating", authenticateToken, async (req, res) => {
-    console.log("Request received:", req.params, req.body);
+  try {
+    const { rating, bookid } = req.body;
+    if (!bookid) return res.status(400).json({ message: "Book ID required" });
 
-    try {
-        const { bookid } = req.headers;
-        const { rating } = req.body;  // Rating from the authenticated user
+    const book = await Book.findById(bookid);
+    if (!book) return res.status(404).json({ message: "Book not found" });
 
-        if (rating < 1 || rating > 5) {
-            return res.status(400).json({ message: "Rating should be between 1 and 5" });
-        }
-
-        const book = await Book.findById(bookid);
-        if (!book) {
-            return res.status(404).json({ message: "Book not found" });
-        }
-
-        // Check if user has already rated
-        const existingRating = book.ratings.find(r => r.id.toString() === req.user.id.toString());
-        if (existingRating) {
-            existingRating.rating = rating;  // Update if rating already exists for the user
-        } else {
-            book.ratings.push({ id: req.user.id, rating });  // Add new rating
-        }
-
-        // Recalculate average rating
-        const averageRating = book.ratings.reduce((sum, r) => sum + r.rating, 0) / book.ratings.length;
-        book.averageRating = averageRating;
-
-        await book.save();
-        return res.status(200).json({ message: "Rating added successfully", data: book });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: "An error occurred" });
+    // 1. Add rating to book
+    book.ratings.push({ id: req.user.id, rating });
+    if (book.stock === undefined) {
+        book.stock = 0; // or some default value
     }
-});
+    await book.save();
 
+    // 2. Add rating to user's ratings array (overwrite if already rated)
+    const user = await User.findById(req.user.id).populate("orders");
+    const existingRatingIndex = user.ratings.findIndex(r => r.book.toString() === bookid);
+
+    if (existingRatingIndex !== -1) {
+      // Update existing rating
+      user.ratings[existingRatingIndex].rating = rating;
+      user.ratings[existingRatingIndex].createdAt = new Date();
+    } else {
+      // Add new rating
+      user.ratings.push({ book: bookid, rating });
+    }
+    await user.save();
+
+    // 3. Mark the item as rated in user's orders
+    for (let order of user.orders) {
+      if(order.status === "Delivered") {
+        for (let item of order.items) {
+          if (item.book.toString() === bookid && !item.rated) {
+            item.rated = true;
+          }
+        }
+        
+        await order.save();
+      }
+    }
+    res.status(200).json({ message: "Rating added successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
 // User Review for a Book
 router.post("/add-review", authenticateToken, async (req, res) => {
-    try {
-        const { bookid } = req.headers;
-        const { review } = req.body;  // Review text from the authenticated user
+  try {
+    const { review, bookid } = req.body;
+    if (!bookid) return res.status(400).json({ message: "Book ID required" });
 
-        const book = await Book.findById(bookid);
-        if (!book) {
-            return res.status(404).json({ message: "Book not found" });
-        }
+    const book = await Book.findById(bookid);
+    if (!book) return res.status(404).json({ message: "Book not found" });
 
-        // Add the review to the book
-        book.reviews.push({ id: req.user.id, review });
-
-        await book.save();
-        return res.status(200).json({ message: "Review added successfully" });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: "An error occurred" });
+    // 1. Add review to book
+    book.reviews.push({ id: req.user.id, review });
+    if (book.stock === undefined) {
+        book.stock = 0; // or some default value
     }
-});
+    await book.save();
 
+    // 2. Add review to user's reviews array (overwrite if already reviewed)
+    const user = await User.findById(req.user.id).populate("orders");
+    const existingReviewIndex = user.reviews.findIndex(r => r.book.toString() === bookid);
+
+    if (existingReviewIndex !== -1) {
+      user.reviews[existingReviewIndex].review = review;
+      user.reviews[existingReviewIndex].createdAt = new Date();
+    } else {
+      user.reviews.push({ book: bookid, review });
+    }
+    await user.save();
+
+    // 3. Mark the item as reviewed in user's orders
+    for (let order of user.orders) {
+      if(order.status === "Delivered") {
+        for (let item of order.items) {
+          if (item.book.toString() === bookid && !item.reviewed) {
+            item.reviewed = true;
+          }
+        }
+        await order.save();
+      }
+    }
+    res.status(200).json({ message: "Review added successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
 //get all books
 router.get("/get-all-books",async(req,res)=>{
@@ -317,7 +350,6 @@ router.get("/sort-books", async (req, res) => {
         return res.status(500).json({ message: "An error occurred" });
     }
 });
-
 
 // Get all books by a specific author
 router.get("/books-by-author", async (req, res) => {

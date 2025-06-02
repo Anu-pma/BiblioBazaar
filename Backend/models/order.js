@@ -17,7 +17,15 @@ const order = new mongoose.Schema({
             price:{
                 type:Number,
                 required:true
-            }
+            },
+            rated: {
+                type: Boolean,
+                default: false,
+            },
+            reviewed: {
+                type: Boolean,
+                default: false,
+            },
             
         }
     ],
