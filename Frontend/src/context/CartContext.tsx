@@ -65,16 +65,17 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const addToCart = async (book: Book) => {
     try {
       await axios.put(
-        'http://localhost:3000/api/v1/add-book-to-cart',
-        {}, // no body
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            bookid: book._id,
-            id: userId,
-          },
-        }
-      );
+      'http://localhost:3000/api/v1/add-book-to-cart',
+      {
+        bookid: book._id,
+        id: userId, // Send this in body
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
       setItems(prev => {
         const exists = prev.find(item => item._id === book._id);
         if (exists) return prev;
@@ -89,12 +90,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       await axios.put(
         'http://localhost:3000/api/v1/remove-book-from-cart',
-        {}, // no body
+        {bookid: bookId,
+            id: userId,}, // no body
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            bookid: bookId,
-            id: userId,
+            
           },
         }
       );
@@ -103,6 +104,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error('Failed to remove from cart:', err);
     }
   };
+
+  
 
   const updateQuantity = (bookId: string, quantity: number) => {
     setItems(prev =>

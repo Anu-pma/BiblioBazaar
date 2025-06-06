@@ -81,7 +81,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signInWithGoogle = async (token: string, userData: User) => {
     localStorage.setItem('token', token);
-    localStorage.setItem('userId', userData.id);
+    localStorage.setItem('userId', userData.id || (userData as any)._id);
+
+    console.log('Token:', token);
+    console.log('User:', userData);
   
     setUser(userData);
     toast.success('Successfully signed in with Google!');
@@ -110,10 +113,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       localStorage.setItem('token', data.token);
-      localStorage.setItem('userId', data.id);
+      localStorage.setItem('userId', data.id || data._id);
 
       // Fetch user info to get complete profile
-      await fetchUserInfo(data.token, data.id);
+      await fetchUserInfo(data.token, data.id || data._id);
 
       toast.success('Successfully signed in!');
       

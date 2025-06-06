@@ -25,7 +25,7 @@ export default function NewReleases() {
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const { addToCart } = useCart();
+  const { addToCart ,increaseQuantity,decreaseQuantity,getItemQuantity} = useCart();
   const { addToFavorites, removeFromFavorites, isFavorite } = useFavorites();
 
   useEffect(() => {
@@ -33,32 +33,64 @@ export default function NewReleases() {
   }, []);
 
   const fetchNewReleases = async () => {
-    try {
-      const response = await fetch('http://localhost:3000/api/v1/get-recent-books');
-      const data = await response.json();
-      
-      if (data.status === 'Success') {
-        setBooks(data.data.map((book: any) => ({
-          id: book._id,
-          title: book.title,
-          author: book.author,
-          price: book.price,
-          description: book.desc || '',
-          url: book.url,
-          category: book.language,
-          rating: book.ratings?.length > 0 
-            ? book.ratings.reduce((acc: number, curr: any) => acc + curr.rating, 0) / book.ratings.length 
-            : 0,
-          stock: book.stock || 10
-        })));
-      }
-    } catch (error) {
-      console.error('Error fetching new releases:', error);
-      toast.error('Failed to load new releases');
-    } finally {
-      setLoading(false);
+  try {
+    const response = await fetch('http://localhost:3000/api/v1/get-recent-books');
+    const data = await response.json();
+
+    if (data.status === 'Success') {
+      setBooks(data.data.map((book: any) => ({
+        _id: book._id,
+        title: book.title,
+        author: book.author,
+        price: book.price,
+        desc: book.desc || '',
+        url: book.url,
+        language: book.language,
+        rating: book.ratings?.length > 0 
+          ? book.ratings.reduce((acc: number, curr: any) => acc + curr.rating, 0) / book.ratings.length 
+          : 0,
+        ratings: book.ratings || [],
+        reviews: book.reviews || [],
+        createdAt: book.createdAt,
+        updatedAt: book.updatedAt,
+      })));
     }
-  };
+  } catch (error) {
+    console.error('Error fetching new releases:', error);
+    toast.error('Failed to load new releases');
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+  // const fetchNewReleases = async () => {
+  //   try {
+  //     const response = await fetch('http://localhost:3000/api/v1/get-recent-books');
+  //     const data = await response.json();
+      
+  //     if (data.status === 'Success') {
+  //       setBooks(data.data.map((book: any) => ({
+  //         id: book._id,
+  //         title: book.title,
+  //         author: book.author,
+  //         price: book.price,
+  //         description: book.desc || '',
+  //         url: book.url,
+  //         category: book.language,
+  //         rating: book.ratings?.length > 0 
+  //           ? book.ratings.reduce((acc: number, curr: any) => acc + curr.rating, 0) / book.ratings.length 
+  //           : 0,
+  //         stock: book.stock || 10
+  //       })));
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching new releases:', error);
+  //     toast.error('Failed to load new releases');
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const handleFavoriteToggle = (book: Book, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -126,21 +158,39 @@ export default function NewReleases() {
               
               <div className="flex gap-2">
                 <button
-                  onClick={() => navigate(`/books/${book._id}`)}
+                   onClick={() => navigate(`/books/${book._id}`)}
                   className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
                 >
                   View Details
                 </button>
-                <button
-                  onClick={() => {
-                    addToCart(book);
-                    toast.success('Added to cart');
-                  }}
-                  className="bg-green-600 text-white p-2 rounded-lg hover:bg-green-700"
-                  title="Add to Cart"
-                >
-                  <ShoppingCart className="w-5 h-5" />
-                </button>
+                {getItemQuantity(book._id) === 0 ? (
+                                  <button
+                                    onClick={() => addToCart(book)}
+                                    className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
+                                    title="Add to Cart"
+                                  >
+                                    <ShoppingCart className="w-4 h-4 inline" />
+                                  </button>
+                                ) : (
+                                  <div className="flex items-center gap-2">
+                                    <button
+                                      onClick={() => decreaseQuantity(book._id)}
+                                      className="bg-gray-200 text-black px-2 rounded hover:bg-gray-300"
+                                      title="Decrease"
+                                    >
+                                      −
+                                    </button>
+                                    <span className="text-sm font-medium">{getItemQuantity(book._id)}</span>
+                                    <button
+                                      onClick={() => increaseQuantity(book)}
+                                      className="bg-gray-200 text-black px-2 rounded hover:bg-gray-300"
+                                      title="Increase"
+                                    >
+                                      +
+                                    </button>
+                                  </div>
+                                )}
+                
               </div>
             </div>
           </div>

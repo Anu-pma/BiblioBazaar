@@ -53,7 +53,7 @@ router.put("/add-book-to-cart", authenticateToken, async (req, res) => {
 //remove book from cart
 router.put("/remove-book-from-cart" , authenticateToken , async(req,res)=>{
     try {
-        const {bookid,id} = req.headers; //can use param instead of header also
+        const {bookid,id} = req.body; //can use param instead of header also
         const userData = await User.findById(id); 
 
         //to check if book already added
