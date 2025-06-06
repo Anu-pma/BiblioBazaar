@@ -5,6 +5,66 @@ const Order = require("../models/order");
 const User = require("../models/user");
 const moment = require('moment');
 
+// routes/payment.js or similar
+const express = require('express');
+// const router = express.Router();
+const Razorpay = require('razorpay');
+const crypto = require('crypto');
+
+const instance = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
+
+router.post('/create-razorpay-order', async (req, res) => {
+  try {
+    const { amount, currency } = req.body;
+
+    const options = {
+      amount,
+      currency,
+      receipt: `receipt_order_${Date.now()}`,
+    };
+
+    const order = await instance.orders.create(options);
+    res.status(200).json({ order });
+  } catch (err) {
+    console.error('Error creating order:', err);
+    res.status(500).json({ message: 'Failed to create Razorpay order' });
+  }
+});
+
+//verify payment
+router.post('/verify-payment', async (req, res) => {
+  try {
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      order,
+      total,
+      shippingDetails,
+    } = req.body;
+
+    const generated_signature = crypto
+      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+      .update(razorpay_order_id + '|' + razorpay_payment_id)
+      .digest('hex');
+
+    if (generated_signature !== razorpay_signature) {
+      return res.status(400).json({ status: 'Failure', message: 'Invalid payment signature' });
+    }
+
+    // Save order in DB (pseudo code)
+    // await Order.create({ items: order, total, shippingDetails, paymentId: razorpay_payment_id });
+
+    res.status(200).json({ status: 'Success', message: 'Payment verified and order placed' });
+  } catch (err) {
+    console.error('Payment verification failed:', err);
+    res.status(500).json({ message: 'Payment verification failed' });
+  }
+});
+
 //place order
 router.post("/place-order", authenticateToken, async (req, res) => {
     try {
