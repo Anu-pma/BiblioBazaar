@@ -54,12 +54,12 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     try {
       await axios.put(
         `${API_URL}/add-book-to-favourite`,
-        {},
+        {id: userId,
+        bookid: book._id,},
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            id: userId,
-            bookid: book._id,
+            
           },
         }
       );
@@ -74,12 +74,12 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     try {
       await axios.put(
         `${API_URL}/remove-book-from-favourite`,
-        {},
+        {id: userId,
+            bookid: bookId,},
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            id: userId,
-            bookid: bookId,
+            
           },
         }
       );

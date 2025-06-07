@@ -23,7 +23,7 @@ export type Book = {
 export default function BookDetails() {
   const { id } = useParams();//get book id from url
   const navigate = useNavigate();//hook to nav btw pages
-  const { addToCart } = useCart();
+  const { addToCart,getItemQuantity, increaseQuantity, decreaseQuantity } = useCart();
   const { addToFavorites, isFavorite, removeFromFavorites } = useFavorites();
   const isAuthenticated = localStorage.getItem('token');
   const [book, setBook] = useState<Book | null>(null);//state to store book details
@@ -126,7 +126,7 @@ export default function BookDetails() {
             <p className="text-gray-700 mb-8">{book.desc}</p>
 
             <div className="flex gap-4">
-              <button
+              {/* <button
               onClick={(e) => {
                 // Check if user is authenticated
                 if (!isAuthenticated) {
@@ -142,7 +142,32 @@ export default function BookDetails() {
             >
               <ShoppingCart className="w-5 h-5" />
               Add to Cart
-            </button>
+            </button> */}
+            {getItemQuantity(book._id) === 0 ? (
+  <button
+    onClick={() => handleAddToCart(book)}
+    className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2 transform hover:scale-105"
+  >
+    <ShoppingCart className="w-5 h-5" />
+    Add to Cart
+  </button>
+) : (
+  <div className="flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-lg">
+    <button
+      onClick={() => decreaseQuantity(book._id)}
+      className="bg-gray-200 px-2 py-1 rounded hover:bg-gray-300"
+    >
+      −
+    </button>
+    <span className="text-sm font-medium px-2">{getItemQuantity(book._id)}</span>
+    <button
+      onClick={() => increaseQuantity(book)}
+      className="bg-gray-200 px-2 py-1 rounded hover:bg-gray-300"
+    >
+      +
+    </button>
+  </div>
+)}
 
               <button onClick={() => navigate('/cart')} className="bg-gray-100 text-gray-800 px-6 py-3 rounded-lg hover:bg-gray-200 transform hover:scale-105">
                 View Cart

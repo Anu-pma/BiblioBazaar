@@ -5,8 +5,19 @@ const {authenticateToken}=require("./userAuth")
 //add book to favourite
 router.put("/add-book-to-favourite" , authenticateToken , async(req,res)=>{
     try {
-        const {bookid,id} = req.headers;
+        const {bookid,id} = req.body;
+
+        console.log("Received bookid:", bookid);
+        console.log("Received user id:", id);
+
+        if (!bookid || !id) {
+      return res.status(400).json({ message: "Missing bookid or user id in headers" });
+    }
         const userData = await User.findById(id); 
+
+        if (!userData) {
+            return res.status(404).json({ message: "User not found" });
+        }
 
         //to check if book already added
         const isBookFavourite = userData.favourites.includes(bookid);
@@ -24,7 +35,7 @@ router.put("/add-book-to-favourite" , authenticateToken , async(req,res)=>{
 //remove book from favourite
 router.put("/remove-book-from-favourite" , authenticateToken , async(req,res)=>{
     try {
-        const {bookid,id} = req.headers;
+        const {bookid,id} = req.body;
         const userData = await User.findById(id); 
 
         //to check if book already added

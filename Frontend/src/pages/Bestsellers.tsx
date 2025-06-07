@@ -26,7 +26,7 @@ export default function Bestsellers() {
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const { addToCart } = useCart();
+  const { addToCart,increaseQuantity,decreaseQuantity,getItemQuantity } = useCart();
   const { addToFavorites, removeFromFavorites, isFavorite } = useFavorites();
 
   useEffect(() => {
@@ -42,17 +42,20 @@ export default function Bestsellers() {
       if (data.status === 'Success') {
         const sortedBooks = data.data
           .map((book: any) => ({
-            id: book._id,
+            _id: book._id,
             title: book.title,
             author: book.author,
             price: book.price,
-            description: book.desc || '',
+            desc: book.desc || '',
             url: book.url,
-            category: book.language,
+            language: book.language,
             rating: book.ratings?.length > 0 
               ? book.ratings.reduce((acc: number, curr: any) => acc + curr.rating, 0) / book.ratings.length 
               : 0,
-            stock: book.stock || 10
+            ratings: book.ratings || [],
+            reviews: book.reviews || [],
+            createdAt: book.createdAt,
+            updatedAt: book.updatedAt,
           }))
           .sort((a: Book, b: Book) => b.rating - a.rating)
           .slice(0, 8); // Get top 8 rated books
@@ -148,16 +151,34 @@ export default function Bestsellers() {
                 >
                   View Details
                 </button>
-                <button
-                  onClick={() => {
-                    addToCart(book);
-                    toast.success('Added to cart');
-                  }}
-                  className="bg-green-600 text-white p-2 rounded-lg hover:bg-green-700"
-                  title="Add to Cart"
-                >
-                  <ShoppingCart className="w-5 h-5" />
-                </button>
+                {getItemQuantity(book._id) === 0 ? (
+                                  <button
+                                    onClick={() => addToCart(book)}
+                                    className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
+                                    title="Add to Cart"
+                                  >
+                                    <ShoppingCart className="w-4 h-4 inline" />
+                                  </button>
+                                ) : (
+                                  <div className="flex items-center gap-2">
+                                    <button
+                                      onClick={() => decreaseQuantity(book._id)}
+                                      className="bg-gray-200 text-black px-2 rounded hover:bg-gray-300"
+                                      title="Decrease"
+                                    >
+                                      −
+                                    </button>
+                                    <span className="text-sm font-medium">{getItemQuantity(book._id)}</span>
+                                    <button
+                                      onClick={() => increaseQuantity(book)}
+                                      className="bg-gray-200 text-black px-2 rounded hover:bg-gray-300"
+                                      title="Increase"
+                                    >
+                                      +
+                                    </button>
+                                  </div>
+                                )}
+                
               </div>
             </div>
           </div>

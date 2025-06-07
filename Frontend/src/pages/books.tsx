@@ -317,7 +317,7 @@ export type Book = {
 
 export default function Books() {
   const navigate = useNavigate(); // hook for navigating to diff pages
-  const { addToCart, items } = useCart(); // access cart fun
+  const { addToCart, items,increaseQuantity,getItemQuantity,decreaseQuantity } = useCart(); // access cart fun
   const { addToFavorites, removeFromFavorites, isFavorite } = useFavorites(); // access fav fun
   const [books, setBooks] = useState<Book[]>([]); // book list
   const [search, setSearch] = useState(''); // search query
@@ -577,13 +577,41 @@ export default function Books() {
                 >
                   View Details
                 </button>
-                <button
+                {/* <button
                   onClick={() => handleAddToCart(book)}
                   className="bg-green-600 text-white p-2 rounded-lg hover:bg-green-700 transform hover:scale-105"
                   title="Add to Cart"
                 >
                   <ShoppingCart className="w-5 h-5" />
-                </button>
+                </button> */}
+              {getItemQuantity(book._id) === 0 ? (
+                  <button
+                    onClick={() => handleAddToCart(book)}
+                    className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
+                    title="Add to Cart"
+                  >
+                    <ShoppingCart className="w-4 h-4 inline" />
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => decreaseQuantity(book._id)}
+                      className="bg-gray-200 text-black px-2 rounded hover:bg-gray-300"
+                      title="Decrease"
+                    >
+                      −
+                    </button>
+                    <span className="text-sm font-medium">{getItemQuantity(book._id)}</span>
+                    <button
+                      onClick={() => increaseQuantity(book)}
+                      className="bg-gray-200 text-black px-2 rounded hover:bg-gray-300"
+                      title="Increase"
+                    >
+                      +
+                    </button>
+                  </div>
+                )}
+
               </div>
             </div>
           </div>
