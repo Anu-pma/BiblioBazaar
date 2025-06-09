@@ -54,7 +54,14 @@ export default function Cart() {
                 <div className="mt-4 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() => updateQuantity(item._id, item.quantity - 1)}
+                      onClick={() => {
+                        const newQuantity = item.quantity - 1;
+                        if (newQuantity === 0) {
+                          removeFromCart(item._id);
+                        } else {
+                          updateQuantity(item._id, newQuantity);
+                        }
+                      }}
                       className="text-gray-500 hover:text-gray-700"
                     >
                       <MinusCircle size={20} />
