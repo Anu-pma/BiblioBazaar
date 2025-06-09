@@ -46,9 +46,14 @@ router.post('/google', async (req, res) => {
         user = await User.create({
           username: name,
           email,
-          profileImage: picture,
-          password: null, // since it's Google login
+          avatar: picture,
+          //password: null, // since it's Google login
           authProvider: 'google',
+          cart: [],
+          favourites: [],
+          orders: [],
+          ratings: [],
+          reviews: []
         });
       }
   

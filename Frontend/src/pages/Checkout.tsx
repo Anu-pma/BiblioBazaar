@@ -897,7 +897,8 @@ export default function Checkout() {
         ...paymentDetails,
         order: orderItems,
         total: total,
-        shippingDetails
+        shippingDetails,
+        userId
       },
       {
         headers: {

@@ -25,9 +25,10 @@ const {authenticateToken}=require("./userAuth");
 //  });
 router.put("/add-book-to-cart", authenticateToken, async (req, res) => {
     try {
-        const { bookid, id } = req.body;
+        const { bookid } = req.body;
+        const userId = req.user.id; // Assuming user ID is sent in headers
 
-        const userData = await User.findById(id);
+        const userData = await User.findById(userId);
 
         if (!userData) {
             return res.status(404).json({ status: "Error", message: "User not found." });
@@ -40,7 +41,7 @@ router.put("/add-book-to-cart", authenticateToken, async (req, res) => {
         }
 
         // Push the book to user's cart
-        await User.findByIdAndUpdate(id, {
+        await User.findByIdAndUpdate(userId, {
             $push: { cart: bookid }
         });
 

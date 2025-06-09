@@ -44,6 +44,7 @@ router.post('/verify-payment', async (req, res) => {
       order,
       total,
       shippingDetails,
+      userId,
     } = req.body;
 
     const generated_signature = crypto
@@ -54,6 +55,31 @@ router.post('/verify-payment', async (req, res) => {
     if (generated_signature !== razorpay_signature) {
       return res.status(400).json({ status: 'Failure', message: 'Invalid payment signature' });
     }
+
+    // ✅ Create and save order
+    const newOrder = new Order({
+      user: userId,
+      items: order.map(orderData => ({
+        book: orderData._id,
+        quantity: orderData.quantity,
+        price: orderData.price,
+      })),
+      total,
+      shippingDetails,
+      status: "Order Placed",
+    });
+
+    const savedOrder = await newOrder.save();
+
+    // Push order to user's history
+    await User.findByIdAndUpdate(userId, {
+      $push: { orders: savedOrder._id },
+    });
+
+    // Remove books from cart
+    await User.findByIdAndUpdate(userId, {
+      $pull: { cart: { $in: order.map(item => item._id) } },
+    });
 
     // Save order in DB (pseudo code)
     // await Order.create({ items: order, total, shippingDetails, paymentId: razorpay_payment_id });
@@ -70,6 +96,11 @@ router.post("/place-order", authenticateToken, async (req, res) => {
     try {
       const { id } = req.headers;
       const { order, total } = req.body; // order is an array of books
+
+      console.log("Received order:", order);
+      console.log("Received total:", total);
+      console.log("Received user id:", id);
+
   
       if (!order || !total) {
         return res.status(400).json({ message: "Missing order data or total." });
