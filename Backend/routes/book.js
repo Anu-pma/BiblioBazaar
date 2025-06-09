@@ -1,7 +1,8 @@
 //Admin api: add, update and delete
 const router = require("express").Router();
 const User = require("../models/user");
-const Book=require("../models/book")
+const Book=require("../models/book");
+const Order = require("../models/order");
 const jwt = require("jsonwebtoken");
 const jwt_secret=process.env.JWT_SECRET
 const {authenticateToken}=require("./userAuth")
@@ -153,48 +154,41 @@ router.get("/view-ratings-reviews", authenticateToken, async (req, res) => {
 router.post("/add-rating", authenticateToken, async (req, res) => {
   try {
     const { rating, bookid } = req.body;
-    if (!bookid) return res.status(400).json({ message: "Book ID required" });
+    if (!bookid || rating == null)
+      return res.status(400).json({ message: "Book ID and rating required" });
 
     const book = await Book.findById(bookid);
     if (!book) return res.status(404).json({ message: "Book not found" });
 
-    // 1. Add rating to book
-    book.ratings.push({ id: req.user.id, rating });
-    if (book.stock === undefined) {
-        book.stock = 0; // or some default value
+    // Find existing rating by this user in book.ratings array
+    const existingRating = book.ratings.find(
+      (r) => r.id?.toString() === req.user.id
+    );
+
+    if (existingRating) {
+      existingRating.rating = rating;
+    } else {
+      book.ratings.push({ id: req.user.id, rating });
     }
     await book.save();
-
-    // 2. Add rating to user's ratings array (overwrite if already rated)
-    const user = await User.findById(req.user.id).populate("orders");
-    const existingRatingIndex = user.ratings.findIndex(r => r.book.toString() === bookid);
-
-    if (existingRatingIndex !== -1) {
-      // Update existing rating
-      user.ratings[existingRatingIndex].rating = rating;
-      user.ratings[existingRatingIndex].createdAt = new Date();
-    } else {
-      // Add new rating
-      user.ratings.push({ book: bookid, rating });
-    }
-    await user.save();
-
-    // 3. Mark the item as rated in user's orders
-    for (let order of user.orders) {
-      if(order.status === "Delivered") {
-        for (let item of order.items) {
-          if (item.book.toString() === bookid && !item.rated) {
-            item.rated = true;
-          }
+    // Update delivered orders' item with rating
+    const orders = await Order.find({ user: req.user.id, status: "Delivered" });
+    for (const order of orders) {
+      let changed = false;
+      for (const item of order.items) {
+        if (item.book.toString() === bookid) {
+          item.rated = true;
+          item.rating = rating;
+          changed = true;
         }
-        
-        await order.save();
       }
+      if (changed) await order.save();
     }
-    res.status(200).json({ message: "Rating added successfully" });
+
+    res.status(200).json({ message: "Rating added successfully." });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error." });
   }
 });
 
@@ -202,45 +196,46 @@ router.post("/add-rating", authenticateToken, async (req, res) => {
 router.post("/add-review", authenticateToken, async (req, res) => {
   try {
     const { review, bookid } = req.body;
-    if (!bookid) return res.status(400).json({ message: "Book ID required" });
+    if (!bookid || !review) {
+      return res.status(400).json({ message: "Book ID and review required" });
+    }
 
     const book = await Book.findById(bookid);
-    if (!book) return res.status(404).json({ message: "Book not found" });
+    if (!book) {
+      return res.status(404).json({ message: "Book not found" });
+    }
+    // Check for existing review
+    const existingReview = book.reviews.find(
+      (r) => r.id?.toString() === req.user.id
+    );
 
-    // 1. Add review to book
-    book.reviews.push({ id: req.user.id, review });
-    if (book.stock === undefined) {
-        book.stock = 0; // or some default value
+    if (existingReview) {
+      existingReview.review = review;
+    } else {
+      book.reviews.push({ id: req.user.id, review });
     }
     await book.save();
 
-    // 2. Add review to user's reviews array (overwrite if already reviewed)
-    const user = await User.findById(req.user.id).populate("orders");
-    const existingReviewIndex = user.reviews.findIndex(r => r.book.toString() === bookid);
+    // Update order items if delivered
+    const orders = await Order.find({ user: req.user.id, status: "Delivered" });
 
-    if (existingReviewIndex !== -1) {
-      user.reviews[existingReviewIndex].review = review;
-      user.reviews[existingReviewIndex].createdAt = new Date();
-    } else {
-      user.reviews.push({ book: bookid, review });
-    }
-    await user.save();
-
-    // 3. Mark the item as reviewed in user's orders
-    for (let order of user.orders) {
-      if(order.status === "Delivered") {
-        for (let item of order.items) {
-          if (item.book.toString() === bookid && !item.reviewed) {
-            item.reviewed = true;
-          }
+    for (const order of orders) {
+      let changed = false;
+      for (const item of order.items) {
+        if (item.book.toString() === bookid) {
+          item.reviewed = true;
+          item.review = review;
+          changed = true;
         }
+      }
+      if (changed) {
         await order.save();
       }
     }
-    res.status(200).json({ message: "Review added successfully" });
+
+    res.status(200).json({ message: "Review added successfully." });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error." });
   }
 });
 

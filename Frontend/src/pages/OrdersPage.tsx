@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 
 interface Order {
@@ -12,27 +12,105 @@ interface Order {
     quantity: number;
     rated: boolean;
     reviewed: boolean;
+    rating?: number;
+    review?: string;
   }[];
   status: string;
   total: number;
   createdAt: string;
 }
 
+const StarRatingInput = ({
+  rating,
+  setRating,
+  disabled,
+}: {
+  rating: number | "";
+  setRating: (val: number) => void;
+  disabled: boolean;
+}) => {
+  // Display 5 stars, clickable unless disabled
+  return (
+    <div style={{ display: "flex", gap: 6, cursor: disabled ? "default" : "pointer" }}>
+      {[1, 2, 3, 4, 5].map((star) => (
+        <span
+  key={star}
+  onClick={() => !disabled && setRating(star)}
+  onKeyDown={(e) => {
+    if (!disabled && (e.key === "Enter" || e.key === " ")) {
+      setRating(star);
+    }
+  }}
+  role="button"
+  tabIndex={0}
+  aria-label={`${star} Star`}
+  style={{
+    width: 24,
+    height: 24,
+    display: "inline-flex",
+    cursor: disabled ? "default" : "pointer",
+    transition: "fill 0.2s",
+    userSelect: "none",
+  }}
+>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="100%"
+    height="100%"
+    viewBox="0 0 24 24"
+    fill={Number(rating) >= star ? "#FFD700" : "#ccc"}
+  >
+    <path 
+      d="M12 .587l3.668 7.431 8.2 1.193-5.934 5.787 1.4 8.167L12 18.896l-7.334 3.87 1.4-8.167L.132 9.211l8.2-1.193z" 
+      />
+  </svg>
+</span>
+
+      ))}
+    </div>
+  );
+};
+
+const StarRatingDisplay = ({ rating }: { rating?: number }) => {
+  const rate = rating ?? 0;
+  return (
+    <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+      {[1, 2, 3, 4, 5].map((star) => (
+        <span
+          key={star}
+          style={{
+            fontSize: 20,
+            color: rate >= star ? "#FFD700" : "#ccc",
+            userSelect: "none",
+          }}
+          aria-hidden="true"
+        >
+          ★
+        </span>
+      ))}
+      <span style={{ marginLeft: 6, fontSize: 14, color: "#555" }}>
+        {rate} / 5
+      </span>
+    </div>
+  );
+};
+
 const OrdersPage = () => {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [ratingInputs, setRatingInputs] = useState<{ [key: string]: number | "" }>({});
+  const [reviewInputs, setReviewInputs] = useState<{ [key: string]: string }>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [ratings, setRatings] = useState<{ [bookId: string]: number }>({});
-  const [reviews, setReviews] = useState<{ [bookId: string]: string }>({});
-  const [submitStatus, setSubmitStatus] = useState<{ [bookId: string]: string }>({});
+
+  const token = localStorage.getItem("token");
+  const userId = localStorage.getItem("userId");
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const userId = localStorage.getItem("userId");
         if (!token || !userId) {
           setError("Not logged in");
+          setLoading(false);
           return;
         }
         const res = await axios.post(
@@ -54,102 +132,140 @@ const OrdersPage = () => {
       }
     };
     fetchOrders();
-  }, []);
+  }, [token, userId]);
 
-  const handleRatingSubmit = async (bookId: string) => {
-    const token = localStorage.getItem("token");
-    if (!token || submitStatus[bookId]?.includes("Rating submitted")) return;
+  async function submitRating(bookid: string, orderStatus: string) {
+    if (orderStatus.toLowerCase() !== "delivered") {
+      alert("You can only rate books from delivered orders.");
+      return;
+    }
+    const rating = ratingInputs[bookid];
+    if (!rating || rating < 1 || rating > 5) {
+      alert("Please enter a rating between 1 and 5");
+      return;
+    }
 
     try {
-      await axios.post(
-        "http://localhost:3000/api/v1/add-rating",
-        {
-          bookid: bookId,
-          rating: ratings[bookId],
+      const res = await fetch("http://localhost:3000/api/v1/add-rating", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      setSubmitStatus((prev) => ({
-        ...prev,
-        [bookId]: "Thank you for rating us! ✅",
-      }));
-
-      setOrders((prevOrders) =>
-        prevOrders.map((order) => ({
-          ...order,
-          items: order.items.map((item) =>
-            item.book._id === bookId ? { ...item, rated: true } : item
-          ),
-        }))
-      );
-    } catch (error) {
-      console.error(error);
-      setSubmitStatus((prev) => ({
-        ...prev,
-        [bookId]: "Rating submission failed ❌",
-      }));
+        body: JSON.stringify({ bookid, rating }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert("Rating submitted");
+        updateOrderWithRating(bookid, rating);
+      } else {
+        alert(data.message || "Failed to submit rating");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Error submitting rating");
     }
-  };
+  }
 
-  const handleReviewSubmit = async (bookId: string) => {
-    const token = localStorage.getItem("token");
-    if (!token || submitStatus[bookId]?.includes("Review submitted")) return;
+  async function submitReview(bookId: string, orderStatus: string) {
+    if (orderStatus.toLowerCase() !== "delivered") {
+      alert("You can only review books from delivered orders.");
+      return;
+    }
+    const review = reviewInputs[bookId];
+    if (!review || review.trim().length === 0) {
+      alert("Please enter a review");
+      return;
+    }
 
     try {
-      await axios.post(
-        "http://localhost:3000/api/v1/add-review",
-        {
-          bookid: bookId,
-          review: reviews[bookId],
+      const res = await fetch("http://localhost:3000/api/v1/add-review", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      setSubmitStatus((prev) => ({
-        ...prev,
-        [bookId]: "Thank you for your review! ✅",
-      }));
-
-      setOrders((prevOrders) =>
-        prevOrders.map((order) => ({
-          ...order,
-          items: order.items.map((item) =>
-            item.book._id === bookId ? { ...item, reviewed: true } : item
-          ),
-        }))
-      );
-    } catch (error) {
-      console.error(error);
-      setSubmitStatus((prev) => ({
-        ...prev,
-        [bookId]: "Review submission failed ❌",
-      }));
+        body: JSON.stringify({ bookid: bookId, review }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert("Review submitted");
+        updateOrderWithReview(bookId, review);
+      } else {
+        alert(data.message || "Failed to submit review");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Error submitting review");
     }
-  };
+  }
 
-  if (loading) return <div className="text-center py-8">Loading...</div>;
-  if (error) return <div className="text-center text-red-500">{error}</div>;
+  function updateOrderWithRating(bookId: string, rating: number) {
+    setOrders((prevOrders) =>
+      prevOrders.map((order) => {
+        const newItems = order.items.map((item) => {
+          if (item.book._id === bookId) {
+            return { ...item, rated: true, rating };
+          }
+          return item;
+        });
+        return { ...order, items: newItems };
+      })
+    );
+    setRatingInputs((prev) => ({ ...prev, [bookId]: "" }));
+  }
+
+  function updateOrderWithReview(bookId: string, review: string) {
+    setOrders((prevOrders) =>
+      prevOrders.map((order) => {
+        const newItems = order.items.map((item) => {
+          if (item.book._id === bookId) {
+            return { ...item, reviewed: true, review };
+          }
+          return item;
+        });
+        return { ...order, items: newItems };
+      })
+    );
+    setReviewInputs((prev) => ({ ...prev, [bookId]: "" }));
+  }
+
+  if (loading)
+    return (
+      <div style={{ textAlign: "center", marginTop: 50, fontSize: 18 }}>
+        Loading orders...
+      </div>
+    );
+  if (error)
+    return (
+      <div style={{ color: "red", textAlign: "center", marginTop: 50, fontSize: 18 }}>
+        {error}
+      </div>
+    );
   if (orders.length === 0)
-    return <div className="text-center py-12">No orders found</div>;
-
+    return (
+      <div style={{ textAlign: "center", marginTop: 50, fontSize: 18 }}>
+        No orders found.
+      </div>
+    );
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h2 className="text-3xl font-bold mb-8 text-gray-900 border-b pb-2">
-        My Orders
-      </h2>
-      {orders.map((order) => (
+  <div
+    style={{
+      maxWidth: 900,
+      margin: "auto",
+      padding: 20,
+      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+    }}
+  >
+    <h2 className="text-3xl font-bold mb-8 text-gray-900 border-b pb-2">
+      My Orders
+    </h2>
+
+    {orders.map((order) => {
+      return (
         <div
           key={order._id}
-          className="bg-white rounded-lg shadow-md p-6 mb-8 border border-gray-200"
+          className="border border-gray-300 rounded-xl bg-white p-6 mb-6 shadow-md hover:shadow-lg hover:scale-[1.01] transition duration-300 ease-in-out"
         >
           <div className="mb-6">
             <h3 className="text-xl font-semibold text-gray-800 mb-3">
@@ -171,132 +287,97 @@ const OrdersPage = () => {
             </p>
           </div>
 
-          <div className="space-y-6">
-            {order.items.map((item, idx) => (
-              <div
-                key={idx}
-                className="border rounded-lg p-4 shadow-sm hover:shadow-lg transition-shadow duration-200"
-              >
-                <div className="flex justify-between items-center mb-3">
-                  <h4 className="text-lg font-semibold text-gray-900">
-                    {item.book?.title || "Untitled"}{" "}
-                    <span className="text-gray-500 font-normal">x {item.quantity}</span>
-                  </h4>
-                  <span className="font-semibold text-gray-800">
-                    INR {(item.book?.price || 0) * item.quantity}
-                  </span>
-                </div>
+          <ul className="space-y-4">
+            {order.items.map((item) => {
+              const canRateReview = order.status.toLowerCase() === "delivered";
+              return (
+                <li
+                  key={item.book._id}
+                  className="pt-4 border border-gray-300 rounded-lg p-4 mb-4 shadow-sm hover:shadow-md transition-shadow"
+                >
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                    <h4 className="text-lg font-semibold text-gray-900">
+                     {item.book?.title || "Untitled"}{" "}
+                     <span className="text-gray-500 font-normal">x {item.quantity}</span>
+                   </h4>
+                    <span className="font-semibold text-gray-800">
+                     ₹ {(item.book?.price || 0) * item.quantity}
+                   </span>
+                  </div>
 
-                {order.status === "Delivered" && (
-                  <div className="mt-3">
-                    {/* Star Rating */}
-                    <div className="flex items-center space-x-1 mb-2">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <svg
-                          key={star}
-                          onClick={() => {
-                            if (!item.rated) {
-                              setRatings((prev) => ({
-                                ...prev,
-                                [item.book._id]: star,
-                              }));
-                            }
-                          }}
-                          xmlns="http://www.w3.org/2000/svg"
-                          className={`h-6 w-6 cursor-pointer transition-colors duration-200 ${
-                            star <= (ratings[item.book._id] || 0)
-                              ? "text-yellow-400"
-                              : "text-gray-300"
-                          } ${item.rated ? "cursor-default" : "hover:text-yellow-500"}`}
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                          aria-label={`${star} Star`}
-                          role="button"
-                          tabIndex={0}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" && !item.rated) {
-                              setRatings((prev) => ({
-                                ...prev,
-                                [item.book._id]: star,
-                              }));
-                            }
-                          }}
-                        >
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.168 3.6a1 1 0 00.95.69h3.917c.969 0 1.371 1.24.588 1.81l-3.17 2.303a1 1 0 00-.364 1.118l1.168 3.6c.3.921-.755 1.688-1.538 1.118l-3.17-2.303a1 1 0 00-1.175 0l-3.17 2.303c-.783.57-1.838-.197-1.538-1.118l1.168-3.6a1 1 0 00-.364-1.118L2.375 9.027c-.783-.57-.38-1.81.588-1.81h3.917a1 1 0 00.95-.69l1.168-3.6z" />
-                        </svg>
-                      ))}
-
-                      {/* Submit Rating Button or Thank You */}
-                      {item.rated || submitStatus[item.book._id]?.includes("Rating submitted") ? (
-                        <span className="text-green-600 text-sm ml-3 font-medium select-none">
-                          Thank you for rating us! ✅
-                        </span>
-                      ) : (
+                  {/* Rating */}
+                  <div className="mt-2">
+                    {item.rated ? (
+                      <StarRatingDisplay rating={item.rating} />
+                    ) : canRateReview ? (
+                      <div className="flex items-center gap-3 mt-2">
+                        <StarRatingInput
+                          rating={ratingInputs[item.book._id] || ""}
+                          setRating={(val) =>
+                            setRatingInputs((prev) => ({
+                              ...prev,
+                              [item.book._id]: val,
+                            }))
+                          }
+                          disabled={false}
+                        />
                         <button
-                          onClick={() => handleRatingSubmit(item.book._id)}
-                          disabled={!ratings[item.book._id]}
-                          className={`ml-4 px-3 py-1 rounded-md text-white text-sm font-semibold transition-colors ${
-                            ratings[item.book._id]
-                              ? "bg-blue-600 hover:bg-blue-700 cursor-pointer"
-                              : "bg-blue-300 cursor-not-allowed"
-                          }`}
+                          onClick={() =>
+                            submitRating(item.book._id, order.status)
+                          }
+                          className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm"
                         >
                           Submit Rating
                         </button>
-                      )}
-                    </div>
-
-                    {/* Review Section */}
-                    <div>
-                      {item.reviewed || submitStatus[item.book._id]?.includes("Review submitted") ? (
-                        <p className="text-green-600 text-sm font-medium select-none">
-                          Thank you for your review! ✅
-                        </p>
-                      ) : (
-                        <>
-                          <textarea
-                            placeholder="Write your review here..."
-                            value={reviews[item.book._id] || ""}
-                            onChange={(e) =>
-                              setReviews((prev) => ({
-                                ...prev,
-                                [item.book._id]: e.target.value,
-                              }))
-                            }
-                            rows={3}
-                            className="w-full border rounded-md p-2 text-sm focus:outline-blue-500"
-                          />
-                          <button
-                            onClick={() => handleReviewSubmit(item.book._id)}
-                            disabled={!reviews[item.book._id]?.trim()}
-                            className={`mt-2 px-4 py-1 rounded-md text-white font-semibold transition-colors ${
-                              reviews[item.book._id]?.trim()
-                                ? "bg-green-600 hover:bg-green-700 cursor-pointer"
-                                : "bg-green-300 cursor-not-allowed"
-                            }`}
-                          >
-                            Submit Review
-                          </button>
-                        </>
-                      )}
-                    </div>
-                    {submitStatus[item.book._id] && !item.rated && !item.reviewed && (
-                      <p className="mt-2 text-sm text-red-500">{submitStatus[item.book._id]}</p>
-                    )}
+                      </div>
+                    ) : null}
                   </div>
-                )}
-              </div>
-            ))}
-          </div>
 
-          <div className="mt-6 border-t pt-4 flex justify-between items-center text-lg font-semibold text-gray-900">
-            <span>Total:</span>
-            <span>INR {order.total}</span>
-          </div>
+                  {/* Review */}
+                  <div className="mt-3">
+                    {item.reviewed ? (
+                      <p className="text-gray-800 bg-gray-50 border border-gray-200 rounded-lg p-3 shadow-sm italic">
+  📝                    <span className="font-semibold not-italic">Review:</span> {item.review}
+                      </p>
+                    ) : canRateReview ? (
+                      <div>
+                        <textarea
+                          placeholder="Write a review..."
+                          value={reviewInputs[item.book._id] || ""}
+                          onChange={(e) =>
+                            setReviewInputs((prev) => ({
+                              ...prev,
+                              [item.book._id]: e.target.value,
+                            }))
+                          }
+                          className="w-full border rounded px-3 py-2 mt-2 text-sm"
+                          rows={2}
+                        ></textarea>
+                        <button
+                          onClick={() =>
+                            submitReview(item.book._id, order.status)
+                          }
+                          className="mt-2 bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm"
+                        >
+                          Submit Review
+                        </button>
+                      </div>
+                    ) : null}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+
+          <p className="text-right mt-4 text-lg font-medium text-gray-800">
+            Total: ₹ {order.total}
+          </p>
         </div>
-      ))}
-    </div>
-  );
+      );
+    })}
+  </div>
+);
+
 };
 
 export default OrdersPage;

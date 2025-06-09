@@ -26,7 +26,15 @@ const order = new mongoose.Schema({
                 type: Boolean,
                 default: false,
             },
-            
+            rating: {
+                type: Number,
+                min: 0,
+                max: 5,
+            },
+            review: {
+                type: String,
+                trim: true,
+            }
         }
     ],
     status: {

@@ -164,6 +164,8 @@ router.post("/get-order-history", authenticateToken, async (req, res) => {
           quantity: item.quantity,
           reviewed: item.reviewed === true, // ensure boolean
           rated: item.rated === true,
+          review: item.review,   
+          rating: item.rating,  
         }));
 
         return {
