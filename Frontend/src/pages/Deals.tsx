@@ -134,7 +134,7 @@ export default function Deals() {
               </div>
 
               <div className="mb-4">
-                <p className="text-xl font-bold text-green-600">${book.price.toFixed(2)}</p>
+                <p className="text-xl font-bold text-green-600">₹{book.price.toFixed(2)}</p>
                 <p className="text-sm text-gray-500">Limited time offer</p>
               </div>
               

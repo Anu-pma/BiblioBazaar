@@ -336,7 +336,7 @@ export default function BookDetails() {
               <span className="ml-2 text-gray-600">({averageRating.toFixed(1)})</span>
             </div>
 
-            <p className="text-3xl font-bold text-gray-900 mb-6">${book.price.toFixed(2)}</p>
+            <p className="text-3xl font-bold text-gray-900 mb-6">₹{book.price.toFixed(2)}</p>
             <p className="text-gray-700 mb-8">{book.desc}</p>
 
             <div className="flex gap-4">

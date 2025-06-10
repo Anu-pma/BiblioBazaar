@@ -142,7 +142,7 @@ export default function Bestsellers() {
                 </span>
               </div>
 
-              <p className="text-xl font-bold mb-4">${book.price.toFixed(2)}</p>
+              <p className="text-xl font-bold mb-4">₹{book.price.toFixed(2)}</p>
               
               <div className="flex gap-2">
                 <button
