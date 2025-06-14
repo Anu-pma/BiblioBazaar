@@ -141,6 +141,7 @@ export default function Books() {
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as 'price' | 'title' | 'rating')}
           >
+            <option value="none">None</option>
             <option value="title">Sort by Title</option>
             <option value="price">Sort by Price</option>
             <option value="rating">Sort by Rating</option>

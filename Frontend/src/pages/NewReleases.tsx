@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, ShoppingCart } from 'lucide-react';
+import { Heart, ShoppingCart, Star } from 'lucide-react';
 
 import { useCart } from '../context/CartContext';
 import { useFavorites } from '../context/FavoritesContext';
-import StarRating from '../components/StarRating';
 import toast from 'react-hot-toast';
 
 export type Book = {
@@ -63,35 +62,6 @@ export default function NewReleases() {
   }
 };
 
-
-  // const fetchNewReleases = async () => {
-  //   try {
-  //     const response = await fetch('http://localhost:3000/api/v1/get-recent-books');
-  //     const data = await response.json();
-      
-  //     if (data.status === 'Success') {
-  //       setBooks(data.data.map((book: any) => ({
-  //         id: book._id,
-  //         title: book.title,
-  //         author: book.author,
-  //         price: book.price,
-  //         description: book.desc || '',
-  //         url: book.url,
-  //         category: book.language,
-  //         rating: book.ratings?.length > 0 
-  //           ? book.ratings.reduce((acc: number, curr: any) => acc + curr.rating, 0) / book.ratings.length 
-  //           : 0,
-  //         stock: book.stock || 10
-  //       })));
-  //     }
-  //   } catch (error) {
-  //     console.error('Error fetching new releases:', error);
-  //     toast.error('Failed to load new releases');
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
   const handleFavoriteToggle = (book: Book, e: React.MouseEvent) => {
     e.stopPropagation();
     if (isFavorite(book._id)) {
@@ -111,6 +81,12 @@ export default function NewReleases() {
     );
   }
 
+    const averageRating = (book: Book): number => {
+        if (!book.ratings || book.ratings.length === 0) return 0;
+        const total = book.ratings.reduce((acc, cur) => acc + cur.rating, 0);
+        return total / book.ratings.length;
+      };
+    
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">New Releases</h1>
@@ -147,11 +123,31 @@ export default function NewReleases() {
               </h3>
               <p className="text-gray-600 mb-2">{book.author}</p>
               
-              <div className="flex items-center mb-2">
-                <StarRating rating={book.rating} size={16} />
-                <span className="ml-2 text-sm text-gray-600">
-                  ({book.rating.toFixed(1)})
-                </span>
+              {/* Ratings */}
+              <div className="flex items-center mb-4">
+                <div className="relative flex">
+                  {[...Array(5)].map((_, i) => {
+                    const fillPercentage =
+                      averageRating(book) >= i + 1
+                        ? 100
+                        : averageRating(book) > i
+                        ? (averageRating(book) - i) * 100
+                        : 0;           
+              
+                    return (
+                      <div key={i} className="relative w-5 h-5">
+                        <Star className="w-5 h-5 text-gray-300" />
+                        <div
+                          className="absolute top-0 left-0 h-full overflow-hidden"
+                          style={{ width: `${fillPercentage}%` }}
+                        >
+                          <Star className="w-5 h-5 text-yellow-400 fill-current" />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <span className="ml-2 text-gray-600">({averageRating(book).toFixed(1)})</span>
               </div>
 
               <p className="text-xl font-bold mb-4">₹{book.price.toFixed(2)}</p>

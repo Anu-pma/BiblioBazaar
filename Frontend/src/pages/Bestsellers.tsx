@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, ShoppingCart, Award } from 'lucide-react';
+import { Heart, ShoppingCart, Award, Star} from 'lucide-react';
 
 import { useCart } from '../context/CartContext';
 import { useFavorites } from '../context/FavoritesContext';
@@ -88,7 +88,11 @@ export default function Bestsellers() {
       </div>
     );
   }
-
+  const averageRating = (book: Book): number => {
+    if (!book.ratings || book.ratings.length === 0) return 0;
+    const total = book.ratings.reduce((acc, cur) => acc + cur.rating, 0);
+    return total / book.ratings.length;
+  };
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center gap-3 mb-8">
@@ -114,6 +118,7 @@ export default function Bestsellers() {
               >
                 <Heart className="w-5 h-5" fill={isFavorite(book._id) ? 'currentColor' : 'none'} />
               </button>
+
               {index < 3 && (
                 <div className={`absolute top-2 left-2 ${
                   index === 0 ? 'bg-yellow-500' :
@@ -135,11 +140,30 @@ export default function Bestsellers() {
               </h3>
               <p className="text-gray-600 mb-2">{book.author}</p>
               
-              <div className="flex items-center mb-2">
-                <StarRating rating={book.rating} size={16} />
-                <span className="ml-2 text-sm text-gray-600">
-                  ({book.rating.toFixed(1)})
-                </span>
+              <div className="flex items-center mb-4">
+                <div className="relative flex">
+                  {[...Array(5)].map((_, i) => {
+                    const fillPercentage =
+                      averageRating(book) >= i + 1
+                        ? 100
+                        : averageRating(book) > i
+                        ? (averageRating(book) - i) * 100
+                        : 0;           
+              
+                    return (
+                      <div key={i} className="relative w-5 h-5">
+                        <Star className="w-5 h-5 text-gray-300" />
+                        <div
+                          className="absolute top-0 left-0 h-full overflow-hidden"
+                          style={{ width: `${fillPercentage}%` }}
+                        >
+                          <Star className="w-5 h-5 text-yellow-400 fill-current" />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <span className="ml-2 text-gray-600">({averageRating(book).toFixed(1)})</span>
               </div>
 
               <p className="text-xl font-bold mb-4">₹{book.price.toFixed(2)}</p>

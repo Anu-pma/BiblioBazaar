@@ -28,6 +28,8 @@ import Checkout from './pages/Checkout';
 import AuthorsPage from './pages/AuthorsPage';
 import CategoriesPage from './pages/CategoriesPage';
 import FAQ from './pages/FAQ';
+import LearnMore from './pages/learnMore';
+import ReturnPolicy from './pages/returnPolicy';
 import Shipping from './pages/Shipping';
 import Contact from './pages/Contact';
 import OrdersPage from './pages/OrdersPage';
@@ -70,6 +72,8 @@ function AppContent() {
         <Route path="/bestsellers" element={<Bestsellers />} />
         <Route path="/deals" element={<Deals />} />
         <Route path="/faq" element={<FAQ />} />
+        <Route path="/learnMore" element={<LearnMore />} />
+        <Route path="/returnPolicy" element={<ReturnPolicy />} />
         <Route path="/shipping" element={<Shipping />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/myorders" element={<OrdersPage />} />

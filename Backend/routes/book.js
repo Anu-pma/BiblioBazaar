@@ -259,11 +259,13 @@ router.get("/get-all-books",async(req,res)=>{
 router.get("/get-recent-books",async(req,res)=>{
     try{
         //sorting on the basis of recently added
-        const books= await Book.find({}, "id url title price").sort({createdAt :-1}).limit(4);
+        const books = await Book.find({}, "url title price ratings author desc language createdAt updatedAt").sort({ createdAt: -1 }).limit(4);
+
         return res.json({
             status:"Success",
             data:books,
         })
+        console.log(data.data);
     }catch(error){
         console.log(error)
         return res.status(500).json({message:"An error occurred"})

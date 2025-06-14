@@ -45,12 +45,29 @@ export function Home() {
         <p className="max-w-[42rem] leading-normal text-muted-foreground sm:text-xl sm:leading-8">
           Your digital bookstore for discovering, reading, and managing your favorite books.
         </p>
+
         <div className="space-x-4">
           <Link to="/books">
-            <Button size="lg">Browse Books</Button>
+            <Button
+              size="lg"
+              className="transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg"
+            >
+              Browse Books
+            </Button>
           </Link>
-          <Button size="lg" variant="outline">Learn More</Button>
+          <Link to="/learnMore">
+            <Button
+              variant="ghost"
+              size="lg"
+              className="bg-white text-black border border-black transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg"
+            >
+              Learn More
+            </Button>
+          </Link>
         </div>
+
+
+
       </motion.div>
 
       {/* Display recent books */}
@@ -62,10 +79,17 @@ export function Home() {
               <img src={book.url} alt={book.title} className="w-full h-40 object-contain rounded-md mb-2" />
               <h3 className="text-lg font-semibold">{book.title}</h3>
               <p className="text-sm text-gray-600">{book.author}</p>
-              <p className="text-gray-700 mt-2">${book.price}</p>
+              <p className="text-gray-700 mt-2">₹{book.price}</p>
               
-              <Button onClick={() => navigate(`/books/${book._id}`)} size="sm" className="mt-3">View Details</Button>
-              
+              {/* <Button onClick={() => navigate(`/books/${book._id}`)} size="sm" className="mt-3" >View Details</Button> */}
+              <Button
+                onClick={() => navigate(`/books/${book._id}`)}
+                size="sm"
+                className="mt-3 transition-transform duration-300 hover:scale-105"
+              >
+                View Details
+              </Button>
+
             </div>
           ))}
         </div>
