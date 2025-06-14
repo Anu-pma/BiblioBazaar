@@ -154,7 +154,7 @@ function ManageOrders() {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <StatCard icon={<ShoppingBag className="w-6 h-6 text-blue-600" />} title="Total Orders" value={stats.totalOrders} color="blue" />
-          <StatCard icon={<TrendingUp className="w-6 h-6 text-green-600" />} title="Revenue" value={`$${stats.totalRevenue.toFixed(2)}`} color="green" />
+          <StatCard icon={<TrendingUp className="w-6 h-6 text-green-600" />} title="Revenue" value={`₹${stats.totalRevenue.toFixed(2)}`} color="green" />
           <StatCard icon={<Clock className="w-6 h-6 text-yellow-600" />} title="Pending" value={stats.pendingOrders} color="yellow" />
           <StatCard icon={<CheckCircle className="w-6 h-6 text-green-600" />} title="Delivered" value={stats.deliveredOrders} color="green" />
         </div>
@@ -253,7 +253,7 @@ function ManageOrders() {
                         )}
                       </td>
 
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${order.total?.toFixed(2)}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">₹{order.total?.toFixed(2)}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
                           ${order.status === 'Delivered' ? 'bg-green-100 text-green-800' :

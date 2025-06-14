@@ -64,8 +64,8 @@ export default function AdminDashboard() {
         <DashboardCard label="Total Users" value={stats.totalUsers} icon={<Users className="text-purple-500" size={24} />} />
         <DashboardCard
           label="Revenue"
-          value={`$${typeof stats.revenue === 'number' ? stats.revenue.toFixed(2) : '0.00'}`}
-          icon={<DollarSign className="text-yellow-500" size={24} />}
+          value={`₹${typeof stats.revenue === 'number' ? stats.revenue.toFixed(2) : '0.00'}`}
+          icon={<span className="text-yellow-500 text-xl">₹</span>}
         />
       </div>
 
@@ -88,7 +88,7 @@ export default function AdminDashboard() {
                   <tr key={order._id} className="border-b">
                     <td className="py-3">#{order._id}</td>
                     <td>{order.user}</td>
-                    <td>{`$${typeof order.total === 'number' ? order.total.toFixed(2) : '0.00'}`}</td>
+                    <td>{`₹${typeof order.total === 'number' ? order.total.toFixed(2) : '0.00'}`}</td>
                     <td>
                       <span className={`px-2 py-1 rounded-full text-sm ${
                         order.status === 'Completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'

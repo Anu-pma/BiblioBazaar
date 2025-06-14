@@ -231,7 +231,8 @@ router.get('/orders/recent', async (req, res) => {
         return {
           _id: order._id,
           user: order.user?.username || 'Unknown',
-          total: `$${totalAmount.toFixed(2)}`,
+          // total: `$${totalAmount.toFixed(2)}`,
+          total: totalAmount,
           status: order.status || 'Unknown',
           date: moment(order.createdAt).format('YYYY-MM-DD HH:mm'),
         };
@@ -292,11 +293,26 @@ router.get('/stats', async (req, res) => {
         Book.countDocuments(),
         Order.countDocuments(),
         User.countDocuments(),
-        Order.find({})
+        Order.find({},'total')
       ]);
   
-      const revenue = orders.reduce((sum, order) => sum + order.total, 0);
-  
+      // const revenue = orders.reduce((sum, order) => sum + order.total, 0);
+    //   let revenue = 0;
+
+    // for (const order of orders) {
+    //   if (order.items && Array.isArray(order.items)) {
+    //     for (const item of order.items) {
+    //       revenue += item.price * item.quantity;
+    //     }
+    //   } else if (typeof order.total === 'number') {
+    //     // fallback if items are missing
+    //     revenue += order.total;
+    //   }
+    // }
+
+      const revenue = orders.reduce((sum, order) => sum + (order.total || 0), 0);
+
+
       res.json({
         totalBooks,
         totalOrders,
