@@ -1,14 +1,10 @@
-# Bibliobazaar  
+#📚 Bibliobazaar  
 
-**"Where Full-Stack Meets Full-Shelf – Welcome to Bibliobazaar."**  
-**"The MERN-powered marketplace for every book lover."**
+**Where Full-Stack Meets Full-Shelf – Welcome to Bibliobazaar.**  
 
-From textbooks to novels, **Bibliobazaar** makes access to books easier, more organized, and more interactive — especially for students and avid readers looking for convenience.
-
+The MERN-powered marketplace for every book lover.From textbooks to novels, **Bibliobazaar** makes access to books easier, more organized, and more interactive — especially for students and avid readers looking for convenience.
 ---
-
 ## 🛠 Tech Stack
-
 ### 🖥️ Frontend:
 - React.js  
 - Tailwind CSS  
