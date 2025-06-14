@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -10,15 +9,6 @@ interface User {
   role: 'admin' | 'user';
   address?: string;
 }
-
-// interface AuthContextType {
-//   user: User | null;
-//   signIn: (username: string, password: string) => Promise<void>;
-//   signUp: (username: string, password: string, email: string, address?: string) => Promise<void>;
-//   updateAddress: (address: string) => Promise<void>;
-//   signOut: () => void;
-//   isLoading: boolean;
-// }
 
 interface AuthContextType {
   user: User | null;

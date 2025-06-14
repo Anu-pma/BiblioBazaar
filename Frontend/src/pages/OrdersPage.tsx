@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { Star } from "lucide-react";
 
 interface Order {
   _id: string;
@@ -29,43 +30,42 @@ const StarRatingInput = ({
   setRating: (val: number) => void;
   disabled: boolean;
 }) => {
-  // Display 5 stars, clickable unless disabled
   return (
-    <div style={{ display: "flex", gap: 6, cursor: disabled ? "default" : "pointer" }}>
+    <div
+      style={{
+        display: "flex",
+        gap: 6,
+        cursor: disabled ? "default" : "pointer",
+      }}
+    >
       {[1, 2, 3, 4, 5].map((star) => (
         <span
-  key={star}
-  onClick={() => !disabled && setRating(star)}
-  onKeyDown={(e) => {
-    if (!disabled && (e.key === "Enter" || e.key === " ")) {
-      setRating(star);
-    }
-  }}
-  role="button"
-  tabIndex={0}
-  aria-label={`${star} Star`}
-  style={{
-    width: 24,
-    height: 24,
-    display: "inline-flex",
-    cursor: disabled ? "default" : "pointer",
-    transition: "fill 0.2s",
-    userSelect: "none",
-  }}
->
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="100%"
-    height="100%"
-    viewBox="0 0 24 24"
-    fill={Number(rating) >= star ? "#FFD700" : "#ccc"}
-  >
-    <path 
-      d="M12 .587l3.668 7.431 8.2 1.193-5.934 5.787 1.4 8.167L12 18.896l-7.334 3.87 1.4-8.167L.132 9.211l8.2-1.193z" 
-      />
-  </svg>
-</span>
-
+          key={star}
+          onClick={() => !disabled && setRating(star)}
+          onKeyDown={(e) => {
+            if (!disabled && (e.key === "Enter" || e.key === " ")) {
+              setRating(star);
+            }
+          }}
+          role="button"
+          tabIndex={0}
+          aria-label={`${star} Star`}
+          style={{
+            width: 24,
+            height: 24,
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: disabled ? "default" : "pointer",
+            userSelect: "none",
+          }}
+        >
+          <Star
+            size={24}
+            color={Number(rating) >= star ? "#FFD700" : "#ccc"}
+            fill={Number(rating) >= star ? "#FFD700" : "none"}
+          />
+        </span>
       ))}
     </div>
   );
@@ -76,16 +76,12 @@ const StarRatingDisplay = ({ rating }: { rating?: number }) => {
   return (
     <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
       {[1, 2, 3, 4, 5].map((star) => (
-        <span
-          key={star}
-          style={{
-            fontSize: 20,
-            color: rate >= star ? "#FFD700" : "#ccc",
-            userSelect: "none",
-          }}
-          aria-hidden="true"
-        >
-          ★
+        <span key={star} aria-hidden="true">
+          <Star
+            size={20}
+            color={rate >= star ? "#FFD700" : "#ccc"}
+            fill={rate >= star ? "#FFD700" : "none"}
+          />
         </span>
       ))}
       <span style={{ marginLeft: 6, fontSize: 14, color: "#555" }}>
@@ -97,10 +93,17 @@ const StarRatingDisplay = ({ rating }: { rating?: number }) => {
 
 const OrdersPage = () => {
   const [orders, setOrders] = useState<Order[]>([]);
-  const [ratingInputs, setRatingInputs] = useState<{ [key: string]: number | "" }>({});
-  const [reviewInputs, setReviewInputs] = useState<{ [key: string]: string }>({});
+  const [ratingInputs, setRatingInputs] = useState<{
+    [key: string]: number | "";
+  }>({});
+  const [reviewInputs, setReviewInputs] = useState<{ [key: string]: string }>(
+    {}
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [visibleItems, setVisibleItems] = useState<{ [key: string]: boolean }>(
+    {}
+  );
 
   const token = localStorage.getItem("token");
   const userId = localStorage.getItem("userId");
@@ -135,14 +138,14 @@ const OrdersPage = () => {
   }, [token, userId]);
 
   async function submitRating(bookid: string, orderStatus: string) {
-    if (orderStatus.toLowerCase() !== "delivered") {
-      alert("You can only rate books from delivered orders.");
-      return;
-    }
     const rating = ratingInputs[bookid];
-    if (!rating || rating < 1 || rating > 5) {
-      alert("Please enter a rating between 1 and 5");
-      return;
+    if (
+      !rating ||
+      rating < 1 ||
+      rating > 5 ||
+      orderStatus.toLowerCase() !== "delivered"
+    ) {
+      return; // silently skip
     }
 
     try {
@@ -156,26 +159,23 @@ const OrdersPage = () => {
       });
       const data = await res.json();
       if (res.ok) {
-        alert("Rating submitted");
         updateOrderWithRating(bookid, rating);
       } else {
-        alert(data.message || "Failed to submit rating");
+        console.error("Failed to submit rating:", data.message);
       }
     } catch (e) {
-      console.error(e);
-      alert("Error submitting rating");
+      console.error("Error submitting rating:", e);
     }
   }
 
   async function submitReview(bookId: string, orderStatus: string) {
-    if (orderStatus.toLowerCase() !== "delivered") {
-      alert("You can only review books from delivered orders.");
-      return;
-    }
     const review = reviewInputs[bookId];
-    if (!review || review.trim().length === 0) {
-      alert("Please enter a review");
-      return;
+    if (
+      !review ||
+      review.trim().length === 0 ||
+      orderStatus.toLowerCase() !== "delivered"
+    ) {
+      return; // silently skip
     }
 
     try {
@@ -189,26 +189,21 @@ const OrdersPage = () => {
       });
       const data = await res.json();
       if (res.ok) {
-        alert("Review submitted");
         updateOrderWithReview(bookId, review);
       } else {
-        alert(data.message || "Failed to submit review");
+        console.error("Failed to submit review:", data.message);
       }
     } catch (e) {
-      console.error(e);
-      alert("Error submitting review");
+      console.error("Error submitting review:", e);
     }
   }
 
   function updateOrderWithRating(bookId: string, rating: number) {
     setOrders((prevOrders) =>
       prevOrders.map((order) => {
-        const newItems = order.items.map((item) => {
-          if (item.book._id === bookId) {
-            return { ...item, rated: true, rating };
-          }
-          return item;
-        });
+        const newItems = order.items.map((item) =>
+          item.book._id === bookId ? { ...item, rated: true, rating } : item
+        );
         return { ...order, items: newItems };
       })
     );
@@ -218,12 +213,9 @@ const OrdersPage = () => {
   function updateOrderWithReview(bookId: string, review: string) {
     setOrders((prevOrders) =>
       prevOrders.map((order) => {
-        const newItems = order.items.map((item) => {
-          if (item.book._id === bookId) {
-            return { ...item, reviewed: true, review };
-          }
-          return item;
-        });
+        const newItems = order.items.map((item) =>
+          item.book._id === bookId ? { ...item, reviewed: true, review } : item
+        );
         return { ...order, items: newItems };
       })
     );
@@ -238,7 +230,14 @@ const OrdersPage = () => {
     );
   if (error)
     return (
-      <div style={{ color: "red", textAlign: "center", marginTop: 50, fontSize: 18 }}>
+      <div
+        style={{
+          color: "red",
+          textAlign: "center",
+          marginTop: 50,
+          fontSize: 18,
+        }}
+      >
         {error}
       </div>
     );
@@ -248,136 +247,229 @@ const OrdersPage = () => {
         No orders found.
       </div>
     );
+
   return (
-  <div
-    style={{
-      maxWidth: 900,
-      margin: "auto",
-      padding: 20,
-      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    }}
-  >
-    <h2 className="text-3xl font-bold mb-8 text-gray-900 border-b pb-2">
-      My Orders
-    </h2>
+    <div className="max-w-4xl mx-auto p-4 font-sans">
+      <h2 className="text-3xl font-bold mb-8 text-gray-900 border-b pb-2">
+        My Orders
+      </h2>
 
-    {orders.map((order) => {
-      return (
-        <div
-          key={order._id}
-          className="border border-gray-300 rounded-xl bg-white p-6 mb-6 shadow-md hover:shadow-lg hover:scale-[1.01] transition duration-300 ease-in-out"
-        >
-          <div className="mb-6">
-            <h3 className="text-xl font-semibold text-gray-800 mb-3">
-              Order ID: <span className="font-mono">{order._id}</span>
-            </h3>
-            <p className="text-sm text-gray-600">
-              Placed on: {new Date(order.createdAt).toLocaleDateString()}
-            </p>
-            <p
-              className={`mt-1 inline-block px-3 py-1 text-sm rounded-full font-medium ${
-                order.status === "Delivered"
-                  ? "bg-green-100 text-green-800"
-                  : order.status === "Out for Delivery"
-                  ? "bg-blue-100 text-blue-800"
-                  : "bg-yellow-100 text-yellow-800"
-              }`}
-            >
-              Status: {order.status}
-            </p>
+      {orders.map((order) => {
+        const isExpanded = visibleItems[order._id] ?? false;
+        const showToggle = order.items.length > 1;
+
+        return (
+          <div
+            key={order._id}
+            className="border border-gray-300 rounded-xl bg-white p-6 mb-6 shadow-md hover:shadow-lg hover:scale-[1.01] transition duration-300 ease-in-out"
+          >
+            <div className="mb-6">
+              <h3 className="text-xl font-semibold text-gray-800 mb-3">
+                Order ID: <span className="font-mono">{order._id}</span>
+              </h3>
+              <p className="text-sm text-gray-600">
+                Placed on: {new Date(order.createdAt).toLocaleDateString()}
+              </p>
+              <p
+                className={`mt-1 inline-block px-3 py-1 text-sm rounded-full font-medium ${
+                  order.status === "Delivered"
+                    ? "bg-green-100 text-green-800"
+                    : order.status === "Out for Delivery"
+                    ? "bg-blue-100 text-blue-800"
+                    : "bg-yellow-100 text-yellow-800"
+                }`}
+              >
+                Status: {order.status}
+              </p>
+            </div>
+
+            {showToggle && (
+              <button
+                onClick={() =>
+                  setVisibleItems((prev) => ({
+                    ...prev,
+                    [order._id]: !prev[order._id],
+                  }))
+                }
+                className="text-blue-600 mb-3 underline text-sm"
+              >
+                {isExpanded ? "Hide items" : `View all items`}
+              </button>
+            )}
+
+            <ul className="space-y-4">
+              {/* Always show the first item */}
+              {[order.items[0]].map((item) => {
+                const canRateReview =
+                  order.status.toLowerCase() === "delivered";
+                return (
+                  <li
+                    key={item.book._id}
+                    className="pt-4 border border-gray-300 rounded-lg p-4 mb-4 shadow-sm hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                      <h4 className="text-lg font-semibold text-gray-900">
+                        {item.book?.title || "Untitled"}{" "}
+                        <span className="text-gray-500 font-normal">
+                          x {item.quantity}
+                        </span>
+                      </h4>
+                      <span className="font-semibold text-gray-800">
+                        ₹ {(item.book?.price || 0) * item.quantity}
+                      </span>
+                    </div>
+
+                    {/* Rating / Review section */}
+                    <div className="mt-2 space-y-2">
+                      {item.rated ? (
+                        <StarRatingDisplay rating={item.rating} />
+                      ) : canRateReview ? (
+                        <div className="flex items-center gap-3 mt-2">
+                          <StarRatingInput
+                            rating={ratingInputs[item.book._id] || ""}
+                            setRating={(val) =>
+                              setRatingInputs((prev) => ({
+                                ...prev,
+                                [item.book._id]: val,
+                              }))
+                            }
+                            disabled={false}
+                          />
+                          <button
+                            onClick={() =>
+                              submitRating(item.book._id, order.status)
+                            }
+                            className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
+                          >
+                            Submit Rating
+                          </button>
+                        </div>
+                      ) : null}
+
+                      {item.reviewed ? (
+                        <p className="text-sm text-gray-700 italic">
+                          Review: {item.review}
+                        </p>
+                      ) : canRateReview ? (
+                        <div className="mt-2">
+                          <textarea
+                            value={reviewInputs[item.book._id] || ""}
+                            onChange={(e) =>
+                              setReviewInputs((prev) => ({
+                                ...prev,
+                                [item.book._id]: e.target.value,
+                              }))
+                            }
+                            className="w-full p-2 border border-gray-300 rounded"
+                            placeholder="Write a review..."
+                            rows={2}
+                          />
+                          <button
+                            onClick={() =>
+                              submitReview(item.book._id, order.status)
+                            }
+                            className="mt-2 bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                          >
+                            Submit Review
+                          </button>
+                        </div>
+                      ) : null}
+                    </div>
+                  </li>
+                );
+              })}
+
+              {/* Conditionally render the rest of the items */}
+              {isExpanded &&
+                order.items.slice(1).map((item) => {
+                  const canRateReview =
+                    order.status.toLowerCase() === "delivered";
+                  return (
+                    <li
+                      key={item.book._id}
+                      className="pt-4 border border-gray-300 rounded-lg p-4 mb-4 shadow-sm hover:shadow-md transition-shadow"
+                    >
+                      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                        <h4 className="text-lg font-semibold text-gray-900">
+                          {item.book?.title || "Untitled"}{" "}
+                          <span className="text-gray-500 font-normal">
+                            x {item.quantity}
+                          </span>
+                        </h4>
+                        <span className="font-semibold text-gray-800">
+                          ₹ {(item.book?.price || 0) * item.quantity}
+                        </span>
+                      </div>
+
+                      {/* Rating / Review section */}
+                      <div className="mt-2 space-y-2">
+                        {item.rated ? (
+                          <StarRatingDisplay rating={item.rating} />
+                        ) : canRateReview ? (
+                          <div className="flex items-center gap-3 mt-2">
+                            <StarRatingInput
+                              rating={ratingInputs[item.book._id] || ""}
+                              setRating={(val) =>
+                                setRatingInputs((prev) => ({
+                                  ...prev,
+                                  [item.book._id]: val,
+                                }))
+                              }
+                              disabled={false}
+                            />
+                            <button
+                              onClick={() =>
+                                submitRating(item.book._id, order.status)
+                              }
+                              className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
+                            >
+                              Submit Rating
+                            </button>
+                          </div>
+                        ) : null}
+
+                        {item.reviewed ? (
+                          <p className="text-sm text-gray-700 italic">
+                            Review: {item.review}
+                          </p>
+                        ) : canRateReview ? (
+                          <div className="mt-2">
+                            <textarea
+                              value={reviewInputs[item.book._id] || ""}
+                              onChange={(e) =>
+                                setReviewInputs((prev) => ({
+                                  ...prev,
+                                  [item.book._id]: e.target.value,
+                                }))
+                              }
+                              className="w-full p-2 border border-gray-300 rounded"
+                              placeholder="Write a review..."
+                              rows={2}
+                            />
+                            <button
+                              onClick={() =>
+                                submitReview(item.book._id, order.status)
+                              }
+                              className="mt-2 bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                            >
+                              Submit Review
+                            </button>
+                          </div>
+                        ) : null}
+                      </div>
+                    </li>
+                  );
+                })}
+            </ul>
+
+            <div className="text-right text-lg font-semibold text-gray-900 mt-4">
+              Total: ₹{order.total}
+            </div>
           </div>
-
-          <ul className="space-y-4">
-            {order.items.map((item) => {
-              const canRateReview = order.status.toLowerCase() === "delivered";
-              return (
-                <li
-                  key={item.book._id}
-                  className="pt-4 border border-gray-300 rounded-lg p-4 mb-4 shadow-sm hover:shadow-md transition-shadow"
-                >
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                    <h4 className="text-lg font-semibold text-gray-900">
-                     {item.book?.title || "Untitled"}{" "}
-                     <span className="text-gray-500 font-normal">x {item.quantity}</span>
-                   </h4>
-                    <span className="font-semibold text-gray-800">
-                     ₹ {(item.book?.price || 0) * item.quantity}
-                   </span>
-                  </div>
-
-                  {/* Rating */}
-                  <div className="mt-2">
-                    {item.rated ? (
-                      <StarRatingDisplay rating={item.rating} />
-                    ) : canRateReview ? (
-                      <div className="flex items-center gap-3 mt-2">
-                        <StarRatingInput
-                          rating={ratingInputs[item.book._id] || ""}
-                          setRating={(val) =>
-                            setRatingInputs((prev) => ({
-                              ...prev,
-                              [item.book._id]: val,
-                            }))
-                          }
-                          disabled={false}
-                        />
-                        <button
-                          onClick={() =>
-                            submitRating(item.book._id, order.status)
-                          }
-                          className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm"
-                        >
-                          Submit Rating
-                        </button>
-                      </div>
-                    ) : null}
-                  </div>
-
-                  {/* Review */}
-                  <div className="mt-3">
-                    {item.reviewed ? (
-                      <p className="text-gray-800 bg-gray-50 border border-gray-200 rounded-lg p-3 shadow-sm italic">
-  📝                    <span className="font-semibold not-italic">Review:</span> {item.review}
-                      </p>
-                    ) : canRateReview ? (
-                      <div>
-                        <textarea
-                          placeholder="Write a review..."
-                          value={reviewInputs[item.book._id] || ""}
-                          onChange={(e) =>
-                            setReviewInputs((prev) => ({
-                              ...prev,
-                              [item.book._id]: e.target.value,
-                            }))
-                          }
-                          className="w-full border rounded px-3 py-2 mt-2 text-sm"
-                          rows={2}
-                        ></textarea>
-                        <button
-                          onClick={() =>
-                            submitReview(item.book._id, order.status)
-                          }
-                          className="mt-2 bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm"
-                        >
-                          Submit Review
-                        </button>
-                      </div>
-                    ) : null}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-
-          <p className="text-right mt-4 text-lg font-medium text-gray-800">
-            Total: ₹ {order.total}
-          </p>
-        </div>
-      );
-    })}
-  </div>
-);
-
+        );
+      })}
+    </div>
+  );
 };
 
 export default OrdersPage;

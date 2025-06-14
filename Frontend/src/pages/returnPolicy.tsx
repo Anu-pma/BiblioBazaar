@@ -1,7 +1,4 @@
-import React from 'react';
 import { 
-  ArrowLeft, 
-  BookOpen, 
   Clock, 
   Shield, 
   RefreshCw, 

@@ -6,7 +6,7 @@ import { useFavorites } from '../context/FavoritesContext';
 
 export type Book = {
   rating: any;
-  _id: string; // MongoDB uses _id
+  _id: string;
   url: string;
   title: string;
   author: string;
@@ -22,7 +22,7 @@ export type Book = {
 
 export default function Books() {
   const navigate = useNavigate(); // hook for navigating to diff pages
-  const { addToCart, items,increaseQuantity,getItemQuantity,decreaseQuantity } = useCart(); // access cart fun
+  const { addToCart,increaseQuantity,getItemQuantity,decreaseQuantity } = useCart(); // access cart fun
   const { addToFavorites, removeFromFavorites, isFavorite } = useFavorites(); // access fav fun
   const [books, setBooks] = useState<Book[]>([]); // book list
   const [search, setSearch] = useState(''); // search query
@@ -34,7 +34,7 @@ export default function Books() {
   const [showFilters, setShowFilters] = useState(false); // filters visibility
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const isAuthenticated = !!localStorage.getItem('token'); // Assuming authToken is stored in localStorage after login
+  const isAuthenticated = !!localStorage.getItem('token');
 
   useEffect(() => {
     const fetchBooks = async () => {
@@ -262,7 +262,7 @@ export default function Books() {
             <div className="p-4">
               <h3 className="text-lg font-semibold mb-2">{book.title}</h3>
               <p className="text-gray-600 mb-2">{book.author}</p>
-              {/* Star rating with partial fill */}
+              {/* Star rating */}
               <div className="flex items-center mb-4">
                 <div className="relative flex">
                   {[...Array(5)].map((_, i) => {

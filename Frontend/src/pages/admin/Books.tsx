@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 
 export type Book = {
     rating: any;
-    _id: string; // MongoDB uses `__id`
+    _id: string; 
     url: string;
     title: string;
     author: string;
@@ -14,8 +14,8 @@ export type Book = {
     stock:number;
     desc: string;
     language: string;
-    ratings: { _id: string; rating: number }[] | []; // Ensure it's an array
-    reviews: { _id: string; review: string }[] | []; // Ensure it's an array
+    ratings: { _id: string; rating: number }[] | []; 
+    reviews: { _id: string; review: string }[] | []; 
     createdAt?: string;
     updatedAt?: string;
   };
@@ -53,7 +53,7 @@ export default function AdminBooks() {
           rating: book.ratings.length > 0 
             ? book.ratings.reduce((acc: number, curr: any) => acc + curr.rating, 0) / book.ratings.length 
             : 0,
-          stock: 10 // Add stock management if needed
+          stock: 10 
         })));
       }
     } catch (error) {

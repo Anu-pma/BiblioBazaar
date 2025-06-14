@@ -12,7 +12,6 @@ export default function Contact() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real application, you would send this to your backend
     console.log('Form submitted:', formData);
     toast.success('Message sent successfully! We\'ll get back to you soon.');
     setFormData({ name: '', email: '', subject: '', message: '' });
@@ -21,7 +20,6 @@ export default function Contact() {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">Contact Us</h1>
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div>
           <div className="bg-white rounded-lg shadow-md p-6 mb-6">

@@ -1,11 +1,11 @@
 //API for signUp and Login
-
 const router = require("express").Router();
 const User = require("../models/user");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const jwt_secret=process.env.JWT_SECRET
 const {authenticateToken}=require("./userAuth")
+
 //sign up
 router.post("/sign-up",async(req,res)=>{
     try{
@@ -137,9 +137,6 @@ router.put("/update-address",authenticateToken,async(req,res)=>{
         res.status(500).json({message:"Internal Server error"})
 
     }
-    // console.log("PUT /update-address hit");
-    // console.log("Headers:", req.headers);
-    // console.log("Body:", req.body);
 })
 
 router.get("/my-orders", authenticateToken, async (req, res) => {
@@ -156,6 +153,5 @@ router.get("/my-orders", authenticateToken, async (req, res) => {
       return res.status(500).json({ message: "Internal Server Error" });
     }
   });
-
 
 module.exports = router;

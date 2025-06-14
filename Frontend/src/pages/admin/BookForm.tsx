@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 
 export type Book = {
     rating: any;
-    _id: string; // MongoDB uses _id
+    _id: string; 
     url: string;
     title: string;
     author: string;
@@ -13,8 +13,8 @@ export type Book = {
     stock:number;
     desc: string;
     language: string;
-    ratings: { id: string; rating: number }[] | []; // Ensure it's an array
-    reviews: { id: string; review: string }[] | []; // Ensure it's an array
+    ratings: { id: string; rating: number }[] | []; 
+    reviews: { id: string; review: string }[] | []; 
     createdAt?: string;
     updatedAt?: string;
   };

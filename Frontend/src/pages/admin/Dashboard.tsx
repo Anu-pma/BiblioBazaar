@@ -4,7 +4,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '@/context/AuthContext';
 
-// Type definitions
 type Stats = {
   totalBooks: number;
   totalOrders: number;
@@ -33,7 +32,7 @@ export default function AdminDashboard() {
 
   const handleLogout = () => {
     signOut(); // Clear user context & token
-    navigate('/signin'); // Redirect to sign in
+    navigate('/signin'); 
   };
 
   const [recentOrders, setRecentOrders] = useState<Order[]>([]);

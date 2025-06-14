@@ -47,7 +47,6 @@ router.post('/google', async (req, res) => {
           username: name,
           email,
           avatar: picture,
-          //password: null, // since it's Google login
           authProvider: 'google',
           cart: [],
           favourites: [],

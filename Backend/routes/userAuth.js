@@ -5,10 +5,9 @@ const jwt_secret=process.env.JWT_SECRET
 const authenticateToken=(req,res,next)=>{
     //extract "authorization" header
     const authHeader= req.headers["authorization"];
-    //extract tokn ffrom header (Bearer generated_token)
+    //extract token from header (Bearer generated_token)
     const token= authHeader && authHeader.split(" ")[1]
 
-    //no token found->401(unauthorized) response
     if(token==null){
         return res.status(401).json({message:"Authentication token required"});
     }
@@ -22,9 +21,9 @@ const authenticateToken=(req,res,next)=>{
 
         // Check if username and password are "admin"
         if (user && user.username === "admin" && user.password === "admin") {
-            user.role = "admin"; // Assign the admin role
+            user.role = "admin"; 
         } else {
-            user.role = "user"; // Default role
+            user.role = "user"; 
         }
         req.user= user;//attach decoded user info to req obj
         next();//move to next mw or route

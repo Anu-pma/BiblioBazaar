@@ -4,10 +4,7 @@ const Book = require("../models/book");
 const Order = require("../models/order");
 const User = require("../models/user");
 const moment = require('moment');
-
-// routes/payment.js or similar
 const express = require('express');
-// const router = express.Router();
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
 
@@ -80,10 +77,6 @@ router.post('/verify-payment', async (req, res) => {
     await User.findByIdAndUpdate(userId, {
       $pull: { cart: { $in: order.map(item => item._id) } },
     });
-
-    // Save order in DB (pseudo code)
-    // await Order.create({ items: order, total, shippingDetails, paymentId: razorpay_payment_id });
-
     res.status(200).json({ status: 'Success', message: 'Payment verified and order placed' });
   } catch (err) {
     console.error('Payment verification failed:', err);
@@ -108,7 +101,7 @@ router.post("/place-order", authenticateToken, async (req, res) => {
   
       let overallTotal = total;
   
-      // Create a new order with items as an array
+      // Create a new order
       const newOrder = new Order({
         user: id,
         items: order.map(orderData => ({
@@ -162,7 +155,7 @@ router.post("/get-order-history", authenticateToken, async (req, res) => {
         const itemsWithFlags = order.items.map(item => ({
           book: item.book,
           quantity: item.quantity,
-          reviewed: item.reviewed === true, // ensure boolean
+          reviewed: item.reviewed === true, 
           rated: item.rated === true,
           review: item.review,   
           rating: item.rating,  
@@ -221,7 +214,7 @@ router.get('/orders/recent', async (req, res) => {
         .populate('items.book', 'title price'); // include price if not already populated
   
       const formatted = recentOrders.map(order => {
-        // Manually calculate total if not present
+        // calculate total 
         const totalAmount = order.items?.reduce((acc, item) => {
           const price = item.book?.price || 0;
           const qty = item.quantity || 1;

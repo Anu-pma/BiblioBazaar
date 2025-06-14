@@ -6,8 +6,6 @@ export type Book = {
     _id: string; // MongoDB uses `_id`
     url: string;
     title: string;
-    
-    
     author: string;
     price: number;
     desc: string;
@@ -16,14 +14,11 @@ export type Book = {
     reviews: { id: string; review: string }[] | []; // Ensure it's an array
     createdAt?: string;
     updatedAt?: string;
-  };
+};
 
-    export interface CartItem extends Book {
-      quantity: number;
-    }
-
-
-
+export interface CartItem extends Book {
+  quantity: number;
+}
 
 interface CartContextType {
   items: CartItem[];
@@ -68,7 +63,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       'http://localhost:3000/api/v1/add-book-to-cart',
       {
         bookid: book._id,
-        //id: userId, // Send this in body
       },
       {
         headers: {
@@ -104,9 +98,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error('Failed to remove from cart:', err);
     }
   };
-
   
-
   const updateQuantity = (bookId: string, quantity: number) => {
     setItems(prev =>
       prev

@@ -3,12 +3,10 @@ import { Link } from 'react-router-dom';
 import {useGoogleLogin} from '@react-oauth/google'
 import { useAuth } from '../../context/AuthContext';
 import { BookOpen } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { FcGoogle } from 'react-icons/fc'; // for Google logo icon
 
 export default function SignIn() {
-  const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const { signIn, signInWithGoogle } = useAuth(); // Assuming signInWithGoogle exists
@@ -33,7 +31,6 @@ export default function SignIn() {
 
       if (res.ok) {
         // Save token/user info in your context
-        // await signInWithGoogle(data.token);
         await signInWithGoogle(data.token, data.user);
       } else {
         toast.error(data.message || 'Google Sign-In failed.');

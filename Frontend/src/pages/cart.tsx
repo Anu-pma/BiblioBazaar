@@ -1,5 +1,3 @@
-
-import React from 'react';
 import { Trash2, MinusCircle, PlusCircle } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';

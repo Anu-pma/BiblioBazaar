@@ -1,10 +1,6 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 
-import { 
-  ArrowLeft, 
-  BookOpen, 
-  Users, 
+import {  
   Shield, 
   Search, 
   Star, 
@@ -13,7 +9,6 @@ import {
   Globe, 
   Award, 
   TrendingUp, 
-  MessageCircle,
   CheckCircle,
   Zap,
   Target,

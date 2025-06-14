@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 
-// Defining a Book type to enforce correct typing
 interface Book {
   _id: string;
   url: string;
@@ -40,7 +39,7 @@ export function Home() {
         transition={{ duration: 0.5 }}
       >
         <h1 className="font-heading text-3xl sm:text-5xl md:text-6xl lg:text-7xl">
-          Welcome to BiblioBazzar
+          Welcome to BiblioBazaar
         </h1>
         <p className="max-w-[42rem] leading-normal text-muted-foreground sm:text-xl sm:leading-8">
           Your digital bookstore for discovering, reading, and managing your favorite books.
@@ -65,9 +64,6 @@ export function Home() {
             </Button>
           </Link>
         </div>
-
-
-
       </motion.div>
 
       {/* Display recent books */}
@@ -80,8 +76,6 @@ export function Home() {
               <h3 className="text-lg font-semibold">{book.title}</h3>
               <p className="text-sm text-gray-600">{book.author}</p>
               <p className="text-gray-700 mt-2">₹{book.price}</p>
-              
-              {/* <Button onClick={() => navigate(`/books/${book._id}`)} size="sm" className="mt-3" >View Details</Button> */}
               <Button
                 onClick={() => navigate(`/books/${book._id}`)}
                 size="sm"
@@ -89,7 +83,6 @@ export function Home() {
               >
                 View Details
               </Button>
-
             </div>
           ))}
         </div>

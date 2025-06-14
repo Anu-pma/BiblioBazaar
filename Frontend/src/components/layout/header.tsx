@@ -1,19 +1,23 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { BookOpen, ShoppingCart, Heart, Sun, Moon, UserCircle } from 'lucide-react';
+import { BookOpen, ShoppingCart, Heart, UserCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-// import { useTheme } from '@/hooks/use-theme';
 import { useBookStore } from '@/lib/store';
 import { useAuth } from '@/context/AuthContext';
+import { useLocation } from 'react-router-dom';
 
 export function Header() {
-  // const { theme, toggleTheme } = useTheme();
   const cart = useBookStore((state) => state.cart);
   const favorites = useBookStore((state) => state.favorites);
   const { user, signOut } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    setDropdownOpen(false); // close dropdown on any route change
+  }, [location.pathname]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -36,7 +40,7 @@ export function Header() {
       <div className="container flex h-14 items-center">
         <Link to="/" className="flex items-center space-x-2">
           <BookOpen className="h-6 w-6" />
-          <span className="hidden font-bold sm:inline-block">BiblioBazzar</span>
+          <span className="hidden font-bold sm:inline-block">BiblioBazaar</span>
         </Link>
 
         <nav className="flex flex-1 items-center justify-center space-x-6 text-sm font-medium">
@@ -63,10 +67,6 @@ export function Header() {
               </span>
             )}
           </Link>
-
-          {/* <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-9 w-9">
-            {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-          </Button> */}
 
           {!user ? (
             <div className="space-x-2">
