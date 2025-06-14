@@ -1,4 +1,4 @@
-##📚 Bibliobazaar
+## 📚 Bibliobazaar
 
 **Where Full-Stack Meets full-Shelf - Welcome to Bibliobazaar.**
 
