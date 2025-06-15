@@ -110,7 +110,7 @@ export default function BookForm() {
 
       const data = await response.json();
       toast.success(data.message);
-      navigate('/admin/books');
+      navigate('/admin/books/managebooks');
     } catch (error) {
       console.error('Error saving book:', error);
       toast.error('Failed to save book');
@@ -241,7 +241,7 @@ export default function BookForm() {
           </button>
           <button
             type="button"
-            onClick={() => navigate('/admin/books')}
+            onClick={() => navigate('/admin/books/managebooks')}
             className="bg-gray-100 text-gray-800 px-6 py-2 rounded-lg hover:bg-gray-200"
           >
             Cancel

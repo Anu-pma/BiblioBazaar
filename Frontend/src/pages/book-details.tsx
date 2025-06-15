@@ -10,6 +10,7 @@ export type Book = {
   url: string;
   title: string;
   author: string;
+  stock:number;
   price: number;
   desc: string;
   category: string;
@@ -142,7 +143,7 @@ export default function BookDetails() {
             <p className="text-gray-700 mb-8">{book.desc}</p>
 
             <div className="flex gap-4">
-              {getItemQuantity(book._id) === 0 ? (
+              {/* {getItemQuantity(book._id) === 0 ? (
                 <button
                   onClick={() => handleAddToCart(book)}
                   className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2 transform hover:scale-105"
@@ -166,7 +167,40 @@ export default function BookDetails() {
                     +
                   </button>
                 </div>
-              )}
+              )} */}
+
+              {book.stock === 0 ? (
+  <span className="bg-red-100 text-red-500 px-3 py-1 rounded text-sm font-medium">
+    Out of Stock
+  </span>
+) : getItemQuantity(book._id) === 0 ? (
+  <button
+    onClick={() => handleAddToCart(book)}
+    className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
+    title="Add to Cart"
+  >
+    <ShoppingCart className="w-5 h-5 inline" />
+  </button>
+) : (
+  <div className="flex items-center gap-2">
+    <button
+      onClick={() => decreaseQuantity(book._id)}
+      className="bg-gray-200 text-black px-2 rounded hover:bg-gray-300"
+      title="Decrease"
+    >
+      −
+    </button>
+    <span className="text-sm font-medium">{getItemQuantity(book._id)}</span>
+    <button
+      onClick={() => increaseQuantity(book)}
+      className="bg-gray-200 text-black px-2 rounded hover:bg-gray-300"
+      title="Increase"
+    >
+      +
+    </button>
+  </div>
+)}
+
 
               <button
                 onClick={() => navigate('/cart')}

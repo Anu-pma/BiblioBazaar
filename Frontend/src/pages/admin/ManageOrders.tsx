@@ -15,6 +15,7 @@ interface Order {
     book: {
       title?: string;
       price?: number;
+      stock: number; 
     };
     quantity: number;
   }[];

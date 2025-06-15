@@ -11,6 +11,7 @@ export type Book = {
   title: string;
   author: string;
   category: string;
+  stock: number; 
   price: number;
   desc: string;
   language: string;
@@ -299,7 +300,38 @@ export default function Books() {
                   View Details
                 </button>
               
-              {getItemQuantity(book._id) === 0 ? (
+              {/* {getItemQuantity(book._id) === 0 ? (
+                  <button
+                    onClick={() => handleAddToCart(book)}
+                    className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
+                    title="Add to Cart"
+                  >
+                    <ShoppingCart className="w-5 h-5 inline" />
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => decreaseQuantity(book._id)}
+                      className="bg-gray-200 text-black px-2 rounded hover:bg-gray-300"
+                      title="Decrease"
+                    >
+                      −
+                    </button>
+                    <span className="text-sm font-medium">{getItemQuantity(book._id)}</span>
+                    <button
+                      onClick={() => increaseQuantity(book)}
+                      className="bg-gray-200 text-black px-2 rounded hover:bg-gray-300"
+                      title="Increase"
+                    >
+                      +
+                    </button>
+                  </div>
+                )} */}
+                {book.stock === 0 ? (
+                  <span className="bg-red-100 text-red-500 px-3 py-1 rounded text-sm font-medium">
+                    Out of Stock
+                  </span>
+                ) : getItemQuantity(book._id) === 0 ? (
                   <button
                     onClick={() => handleAddToCart(book)}
                     className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
@@ -326,6 +358,7 @@ export default function Books() {
                     </button>
                   </div>
                 )}
+
 
               </div>
             </div>

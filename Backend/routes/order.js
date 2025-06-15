@@ -32,6 +32,58 @@ router.post('/create-razorpay-order', async (req, res) => {
 });
 
 //verify payment
+// router.post('/verify-payment', async (req, res) => {
+//   try {
+//     const {
+//       razorpay_order_id,
+//       razorpay_payment_id,
+//       razorpay_signature,
+//       order,
+//       total,
+//       shippingDetails,
+//       userId,
+//     } = req.body;
+
+//     const generated_signature = crypto
+//       .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+//       .update(razorpay_order_id + '|' + razorpay_payment_id)
+//       .digest('hex');
+
+//     if (generated_signature !== razorpay_signature) {
+//       return res.status(400).json({ status: 'Failure', message: 'Invalid payment signature' });
+//     }
+
+//     // ✅ Create and save order
+//     const newOrder = new Order({
+//       user: userId,
+//       items: order.map(orderData => ({
+//         book: orderData._id,
+//         quantity: orderData.quantity,
+//         price: orderData.price,
+//       })),
+//       total,
+//       shippingDetails,
+//       status: "Order Placed",
+//     });
+
+//     const savedOrder = await newOrder.save();
+
+//     // Push order to user's history
+//     await User.findByIdAndUpdate(userId, {
+//       $push: { orders: savedOrder._id },
+//     });
+
+//     // Remove books from cart
+//     await User.findByIdAndUpdate(userId, {
+//       $pull: { cart: { $in: order.map(item => item._id) } },
+//     });
+//     res.status(200).json({ status: 'Success', message: 'Payment verified and order placed' });
+//   } catch (err) {
+//     console.error('Payment verification failed:', err);
+//     res.status(500).json({ message: 'Payment verification failed' });
+//   }
+// });
+
 router.post('/verify-payment', async (req, res) => {
   try {
     const {
@@ -68,15 +120,23 @@ router.post('/verify-payment', async (req, res) => {
 
     const savedOrder = await newOrder.save();
 
-    // Push order to user's history
+    // ✅ Decrease stock for each book in the order
+    for (const item of order) {
+      await Book.findByIdAndUpdate(item._id, {
+        $inc: { stock: -item.quantity },
+      });
+    }
+
+    // ✅ Push order to user's history
     await User.findByIdAndUpdate(userId, {
       $push: { orders: savedOrder._id },
     });
 
-    // Remove books from cart
+    // ✅ Remove books from cart
     await User.findByIdAndUpdate(userId, {
       $pull: { cart: { $in: order.map(item => item._id) } },
     });
+
     res.status(200).json({ status: 'Success', message: 'Payment verified and order placed' });
   } catch (err) {
     console.error('Payment verification failed:', err);
@@ -84,56 +144,126 @@ router.post('/verify-payment', async (req, res) => {
   }
 });
 
+
+//place order
+// router.post("/place-order", authenticateToken, async (req, res) => {
+//     try {
+//       const { id } = req.headers;
+//       const { order, total } = req.body; // order is an array of books
+
+//       console.log("Received order:", order);
+//       console.log("Received total:", total);
+//       console.log("Received user id:", id);
+
+  
+//       if (!order || !total) {
+//         return res.status(400).json({ message: "Missing order data or total." });
+//       }
+  
+//       let overallTotal = total;
+  
+//       // Create a new order
+//       const newOrder = new Order({
+//         user: id,
+//         items: order.map(orderData => ({
+//           book: orderData._id,
+//           quantity: orderData.quantity,
+//           price: orderData.price
+//         })),
+//         total: overallTotal,
+//         status: "Order Placed"
+//       });
+  
+//       // Save the order to the database
+//       const savedOrder = await newOrder.save();
+  
+//       // Save order in user model
+//       await User.findByIdAndUpdate(id, {
+//         $push: { orders: savedOrder._id }
+//       });
+  
+//       // Clear the user's cart
+//       await User.findByIdAndUpdate(id, {
+//         $pull: { cart: { $in: order.map(item => item._id) } }
+//       });
+  
+//       return res.json({
+//         status: "Success",
+//         message: "Order Placed Successfully"
+//       });
+//     } catch (error) {
+//       console.error('Error placing order:', error);
+//       return res.status(500).json({ message: "An error occurred" });
+//     }
+// });
+
 //place order
 router.post("/place-order", authenticateToken, async (req, res) => {
-    try {
-      const { id } = req.headers;
-      const { order, total } = req.body; // order is an array of books
+  try {
+    const { id } = req.headers;
+    const { order, total } = req.body; // order is an array of books
 
-      console.log("Received order:", order);
-      console.log("Received total:", total);
-      console.log("Received user id:", id);
+    console.log("Received order:", order);
+    console.log("Received total:", total);
+    console.log("Received user id:", id);
 
-  
-      if (!order || !total) {
-        return res.status(400).json({ message: "Missing order data or total." });
-      }
-  
-      let overallTotal = total;
-  
-      // Create a new order
-      const newOrder = new Order({
-        user: id,
-        items: order.map(orderData => ({
-          book: orderData._id,
-          quantity: orderData.quantity,
-          price: orderData.price
-        })),
-        total: overallTotal,
-        status: "Order Placed"
-      });
-  
-      // Save the order to the database
-      const savedOrder = await newOrder.save();
-  
-      // Save order in user model
-      await User.findByIdAndUpdate(id, {
-        $push: { orders: savedOrder._id }
-      });
-  
-      // Clear the user's cart
-      await User.findByIdAndUpdate(id, {
-        $pull: { cart: { $in: order.map(item => item._id) } }
-      });
-  
-      return res.json({
-        status: "Success",
-        message: "Order Placed Successfully"
-      });
-    } catch (error) {
-      console.error('Error placing order:', error);
-      return res.status(500).json({ message: "An error occurred" });
+    if (!order || !total) {
+      return res.status(400).json({ message: "Missing order data or total." });
     }
+
+    // ✅ Check stock availability before placing order
+    for (const item of order) {
+      const book = await Book.findById(item._id);
+      if (!book) {
+        return res.status(404).json({ message: `Book with ID ${item._id} not found` });
+      }
+      if (book.stock < item.quantity) {
+        return res.status(400).json({ message: `Insufficient stock for "${book.title}"` });
+      }
+    }
+
+    let overallTotal = total;
+
+    // ✅ Create a new order
+    const newOrder = new Order({
+      user: id,
+      items: order.map(orderData => ({
+        book: orderData._id,
+        quantity: orderData.quantity,
+        price: orderData.price
+      })),
+      total: overallTotal,
+      status: "Order Placed"
+    });
+
+    // ✅ Save the order to the database
+    const savedOrder = await newOrder.save();
+
+    // ✅ Deduct stock for each ordered book
+    for (const item of order) {
+      await Book.findByIdAndUpdate(item._id, {
+        $inc: { stock: -item.quantity }
+      });
+    }
+
+    // ✅ Save order in user model
+    await User.findByIdAndUpdate(id, {
+      $push: { orders: savedOrder._id }
+    });
+
+    // ✅ Clear the user's cart
+    await User.findByIdAndUpdate(id, {
+      $pull: { cart: { $in: order.map(item => item._id) } }
+    });
+
+    return res.json({
+      status: "Success",
+      message: "Order Placed Successfully"
+    });
+  } catch (error) {
+    console.error('Error placing order:', error);
+    return res.status(500).json({ message: "An error occurred" });
+  }
 });
   
 //orders of a user
@@ -239,29 +369,70 @@ router.get('/orders/recent', async (req, res) => {
 });
 
 //updating orders by admin
+// router.put("/update-status", authenticateToken, async (req, res) => {
+//     try {
+//       const orderId = req.headers.id;
+//       const userId = req.user.id; // assuming you set req.user in authenticateToken
+  
+//       // Check if the user is admin first
+//       const user = await User.findById(userId);
+//       if (!user || user.role !== "admin") {
+//         return res.status(403).json({ message: "You are not authorized to perform this action" });
+//       }
+  
+//       // Proceed with order update
+//       await Order.findByIdAndUpdate(orderId, { status: req.body.status });
+  
+//       return res.json({
+//         status: "Success",
+//         message: "Status updated successfully"
+//       });
+//     } catch (error) {
+//       console.log(error);
+//       return res.status(500).json({ message: "An error occurred" });
+//     }
+// });
+
+// updating orders by admin
 router.put("/update-status", authenticateToken, async (req, res) => {
-    try {
-      const orderId = req.headers.id;
-      const userId = req.user.id; // assuming you set req.user in authenticateToken
-  
-      // Check if the user is admin first
-      const user = await User.findById(userId);
-      if (!user || user.role !== "admin") {
-        return res.status(403).json({ message: "You are not authorized to perform this action" });
-      }
-  
-      // Proceed with order update
-      await Order.findByIdAndUpdate(orderId, { status: req.body.status });
-  
-      return res.json({
-        status: "Success",
-        message: "Status updated successfully"
-      });
-    } catch (error) {
-      console.log(error);
-      return res.status(500).json({ message: "An error occurred" });
+  try {
+    const orderId = req.headers.id;
+    const userId = req.user.id; // assuming you set req.user in authenticateToken
+    const newStatus = req.body.status;
+
+    // Check if the user is admin first
+    const user = await User.findById(userId);
+    if (!user || user.role !== "admin") {
+      return res.status(403).json({ message: "You are not authorized to perform this action" });
     }
+
+    const order = await Order.findById(orderId).populate("items.book");
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    // If order is being cancelled, restore the stock
+    if (newStatus === "Cancelled" && order.status !== "Cancelled") {
+      for (const item of order.items) {
+        await Book.findByIdAndUpdate(item.book._id, {
+          $inc: { stock: item.quantity }
+        });
+      }
+    }
+
+    // Update the status
+    await Order.findByIdAndUpdate(orderId, { status: newStatus });
+
+    return res.json({
+      status: "Success",
+      message: "Status updated successfully"
+    });
+  } catch (error) {
+    console.error("Error updating order status:", error);
+    return res.status(500).json({ message: "An error occurred" });
+  }
 });
+
 
 //get order count for a particular user
 router.get("/order-count", authenticateToken, async (req, res) => {
