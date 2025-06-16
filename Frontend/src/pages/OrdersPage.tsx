@@ -347,8 +347,11 @@ const OrdersPage = () => {
                       ) : null}
 
                       {item.reviewed ? (
-                        <p className="text-sm text-gray-700 italic">
-                          Review: {item.review}
+                        <p className="text-sm text-gray-800 italic bg-gray-100 px-3 py-2 rounded-md shadow-sm border border-gray-200 mt-2">
+                          <span className="font-semibold text-gray-700">
+                            Review:
+                          </span>{" "}
+                          {item.review}
                         </p>
                       ) : canRateReview ? (
                         <div className="mt-2">

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Truck, Clock, Globe, CreditCard, ShieldCheck, HelpCircle } from 'lucide-react';
 
 export default function Shipping() {

@@ -1,8 +1,14 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
-import { Search, SlidersHorizontal, Heart, ShoppingCart, Star } from 'lucide-react';
-import { useCart } from '../context/CartContext';
-import { useFavorites } from '../context/FavoritesContext';
+import {
+  Search,
+  SlidersHorizontal,
+  Heart,
+  ShoppingCart,
+  Star,
+} from "lucide-react";
+import { useCart } from "../context/CartContext";
+import { useFavorites } from "../context/FavoritesContext";
 
 export type Book = {
   rating: any;
@@ -11,7 +17,7 @@ export type Book = {
   title: string;
   author: string;
   category: string;
-  stock: number; 
+  stock: number;
   price: number;
   desc: string;
   language: string;
@@ -23,28 +29,36 @@ export type Book = {
 
 export default function Books() {
   const navigate = useNavigate(); // hook for navigating to diff pages
-  const { addToCart,increaseQuantity,getItemQuantity,decreaseQuantity } = useCart(); // access cart fun
+  const { addToCart, increaseQuantity, getItemQuantity, decreaseQuantity } =
+    useCart(); // access cart fun
   const { addToFavorites, removeFromFavorites, isFavorite } = useFavorites(); // access fav fun
   const [books, setBooks] = useState<Book[]>([]); // book list
-  const [search, setSearch] = useState(''); // search query
-  const [sortBy, setSortBy] = useState<'price' | 'title' | 'rating'>('title'); // sort preference
-  const [filterAuthor, setFilterAuthor] = useState(''); // selected author filter
-  const [filterCategory, setFilterCategory] = useState('');
-  const [filterLanguage, setFilterLanguage] = useState('');
+  const [search, setSearch] = useState(""); // search query
+  const [sortBy, setSortBy] = useState<"price" | "title" | "rating">("title"); // sort preference
+  const [filterAuthor, setFilterAuthor] = useState(""); // selected author filter
+  const [filterCategory, setFilterCategory] = useState("");
+  const [filterLanguage, setFilterLanguage] = useState("");
   const [priceRange, setPriceRange] = useState({ min: 0, max: 0 }); // default price range
   const [showFilters, setShowFilters] = useState(false); // filters visibility
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const isAuthenticated = !!localStorage.getItem('token');
+  const [error, setError] = useState("");
+  const isAuthenticated = !!localStorage.getItem("token");
+  const averageRating = (book: Book): number => {
+  if (!book.ratings || book.ratings.length === 0) return 0;
+  const total = book.ratings.reduce((acc, cur) => acc + cur.rating, 0);
+  return total / book.ratings.length;
+};
 
   useEffect(() => {
     const fetchBooks = async () => {
       try {
         setLoading(true);
-        const response = await fetch("http://localhost:3000/api/v1/get-all-books");
-        if (!response.ok) throw new Error('Failed to fetch books');
+        const response = await fetch(
+          "http://localhost:3000/api/v1/get-all-books"
+        );
+        if (!response.ok) throw new Error("Failed to fetch books");
         const result = await response.json();
-  
+
         if (result.status === "Success" && Array.isArray(result.data)) {
           setBooks(result.data); // store books in state if valid data is received
         } else {
@@ -67,35 +81,50 @@ export default function Books() {
   }
 
   // Get unique authors for filters
-  const authors = [...new Set(books.map(book => book.author))];
-  const categories = [...new Set(books.map(book => book.category))];
-  const languages = [...new Set(books.map(book => book.language))];
+  const authors = [...new Set(books.map((book) => book.author))];
+  const categories = [...new Set(books.map((book) => book.category))];
+  const languages = [...new Set(books.map((book) => book.language))];
 
   const filteredBooks = books
-    .filter(book =>
-      book.title.toLowerCase().includes(search.toLowerCase()) ||
-      book.author.toLowerCase().includes(search.toLowerCase())
+    .filter(
+      (book) =>
+        book.title.toLowerCase().includes(search.toLowerCase()) ||
+        book.author.toLowerCase().includes(search.toLowerCase())
     )
-    .filter(book => !filterAuthor || book.author === filterAuthor)
-    .filter(book => !filterCategory || book.category === filterCategory)
-    .filter(book => !filterLanguage || book.language === filterLanguage)
-    .filter(book => (priceRange.min === 0 && priceRange.max === 0) ||
-      (book.price >= priceRange.min && book.price <= priceRange.max))
+    .filter((book) => !filterAuthor || book.author === filterAuthor)
+    .filter((book) => !filterCategory || book.category === filterCategory)
+    .filter((book) => !filterLanguage || book.language === filterLanguage)
+    .filter(
+      (book) =>
+        (priceRange.min === 0 && priceRange.max === 0) ||
+        (book.price >= priceRange.min && book.price <= priceRange.max)
+    )
+    // .sort((a, b) => {
+    //   switch (sortBy) {
+    //     case "price":
+    //       return a.price - b.price; // ascending by price
+    //     case "rating":
+    //       return (b.rating || 0) - (a.rating || 0); // descending by rating
+    //     default:
+    //       return a.title.localeCompare(b.title); // alphabetically by title
+    //   }
+    // });
     .sort((a, b) => {
-      switch (sortBy) {
-        case 'price':
-          return a.price - b.price; // ascending by price
-        case 'rating':
-          return (b.rating || 0) - (a.rating || 0); // descending by rating
-        default:
-          return a.title.localeCompare(b.title); // alphabetically by title
-      }
-    });
+  switch (sortBy) {
+    case "price":
+      return a.price - b.price; // ascending
+    case "rating":
+      return averageRating(b) - averageRating(a); // descending by average rating
+    default:
+      return a.title.localeCompare(b.title); // alphabetical
+  }
+})
+
 
   const handleFavoriteToggle = (book: Book, e: React.MouseEvent) => {
     e.stopPropagation(); // ensures clicking fav button only toggles fav status without triggering any parent click handlers
     if (!isAuthenticated) {
-      navigate('/signin');
+      navigate("/signin");
       return;
     }
     if (isFavorite(book._id)) {
@@ -107,7 +136,7 @@ export default function Books() {
 
   const handleAddToCart = (book: Book) => {
     if (!isAuthenticated) {
-      navigate('/signin');
+      navigate("/signin");
       return;
     }
     addToCart(book);
@@ -116,11 +145,11 @@ export default function Books() {
   if (loading) return <p className="text-center text-lg">Loading books...</p>;
   if (error) return <p className="text-center text-red-500">{error}</p>;
 
-   const averageRating = (book: Book): number => {
-    if (!book.ratings || book.ratings.length === 0) return 0;
-    const total = book.ratings.reduce((acc, cur) => acc + cur.rating, 0);
-    return total / book.ratings.length;
-  };
+  // const averageRating = (book: Book): number => {
+  //   if (!book.ratings || book.ratings.length === 0) return 0;
+  //   const total = book.ratings.reduce((acc, cur) => acc + cur.rating, 0);
+  //   return total / book.ratings.length;
+  // };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -140,7 +169,9 @@ export default function Books() {
           <select
             className="px-4 py-2 border rounded-lg"
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as 'price' | 'title' | 'rating')}
+            onChange={(e) =>
+              setSortBy(e.target.value as "price" | "title" | "rating")
+            }
           >
             <option value="none">None</option>
             <option value="title">Sort by Title</option>
@@ -171,8 +202,10 @@ export default function Books() {
                 onChange={(e) => setFilterAuthor(e.target.value)}
               >
                 <option value="">All Authors</option>
-                {authors.map(author => (
-                  <option key={author} value={author}>{author}</option>
+                {authors.map((author) => (
+                  <option key={author} value={author}>
+                    {author}
+                  </option>
                 ))}
               </select>
             </div>
@@ -187,8 +220,10 @@ export default function Books() {
                 onChange={(e) => setFilterCategory(e.target.value)}
               >
                 <option value="">All Categories</option>
-                {categories.map(category => (
-                  <option key={category} value={category}>{category}</option>
+                {categories.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
                 ))}
               </select>
             </div>
@@ -203,8 +238,10 @@ export default function Books() {
                 onChange={(e) => setFilterLanguage(e.target.value)}
               >
                 <option value="">All Languages</option>
-                {languages.map(language => (
-                  <option key={language} value={language}>{language}</option>
+                {languages.map((language) => (
+                  <option key={language} value={language}>
+                    {language}
+                  </option>
                 ))}
               </select>
             </div>
@@ -219,14 +256,24 @@ export default function Books() {
                   placeholder="Min"
                   className="w-full px-3 py-2 border rounded-lg"
                   value={priceRange.min}
-                  onChange={(e) => setPriceRange({ ...priceRange, min: Number(e.target.value) })}
+                  onChange={(e) =>
+                    setPriceRange({
+                      ...priceRange,
+                      min: Number(e.target.value),
+                    })
+                  }
                 />
                 <input
                   type="number"
                   placeholder="Max"
                   className="w-full px-3 py-2 border rounded-lg"
                   value={priceRange.max}
-                  onChange={(e) => setPriceRange({ ...priceRange, max: Number(e.target.value) })}
+                  onChange={(e) =>
+                    setPriceRange({
+                      ...priceRange,
+                      max: Number(e.target.value),
+                    })
+                  }
                 />
               </div>
             </div>
@@ -235,9 +282,11 @@ export default function Books() {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filteredBooks.map(book => (
-          
-          <div key={book._id} className="bg-white rounded-lg shadow-md overflow-hidden">
+        {filteredBooks.map((book) => (
+          <div
+            key={book._id}
+            className="bg-white rounded-lg shadow-md overflow-hidden"
+          >
             <div className="relative">
               <img
                 src={book.url}
@@ -247,14 +296,16 @@ export default function Books() {
               <button
                 onClick={(e) => handleFavoriteToggle(book, e)}
                 className={`absolute top-2 right-2 p-2 rounded-full bg-white shadow-md transition-transform transform ${
-                  isFavorite(book._id) ? 'scale-110 text-red-500' : 'scale-100 text-gray-400'
+                  isFavorite(book._id)
+                    ? "scale-110 text-red-500"
+                    : "scale-100 text-gray-400"
                 } hover:scale-110 hover:text-red-500 hover:shadow-lg focus:outline-none`}
               >
                 <Heart
                   className="w-5 h-5"
-                  fill={isFavorite(book._id) ? 'currentColor' : 'none'}
+                  fill={isFavorite(book._id) ? "currentColor" : "none"}
                   style={{
-                    transition: 'fill 0.2s ease, transform 0.2s ease',
+                    transition: "fill 0.2s ease, transform 0.2s ease",
                   }}
                 />
               </button>
@@ -272,8 +323,8 @@ export default function Books() {
                         ? 100
                         : averageRating(book) > i
                         ? (averageRating(book) - i) * 100
-                        : 0;           
-              
+                        : 0;
+
                     return (
                       <div key={i} className="relative w-5 h-5">
                         <Star className="w-5 h-5 text-gray-300" />
@@ -287,7 +338,9 @@ export default function Books() {
                     );
                   })}
                 </div>
-                <span className="ml-2 text-gray-600">({averageRating(book).toFixed(1)})</span>
+                <span className="ml-2 text-gray-600">
+                  ({averageRating(book).toFixed(1)})
+                </span>
               </div>
 
               <p className="text-xl font-bold mb-4">₹{book.price.toFixed(2)}</p>
@@ -299,36 +352,9 @@ export default function Books() {
                 >
                   View Details
                 </button>
-              
-              {/* {getItemQuantity(book._id) === 0 ? (
-                  <button
-                    onClick={() => handleAddToCart(book)}
-                    className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
-                    title="Add to Cart"
-                  >
-                    <ShoppingCart className="w-5 h-5 inline" />
-                  </button>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => decreaseQuantity(book._id)}
-                      className="bg-gray-200 text-black px-2 rounded hover:bg-gray-300"
-                      title="Decrease"
-                    >
-                      −
-                    </button>
-                    <span className="text-sm font-medium">{getItemQuantity(book._id)}</span>
-                    <button
-                      onClick={() => increaseQuantity(book)}
-                      className="bg-gray-200 text-black px-2 rounded hover:bg-gray-300"
-                      title="Increase"
-                    >
-                      +
-                    </button>
-                  </div>
-                )} */}
+
                 {book.stock === 0 ? (
-                  <span className="bg-red-100 text-red-500 px-3 py-1 rounded text-sm font-medium">
+                  <span className="bg-red-100 text-red-500 px-3 py-3 rounded text-sm font-medium ">
                     Out of Stock
                   </span>
                 ) : getItemQuantity(book._id) === 0 ? (
@@ -348,7 +374,9 @@ export default function Books() {
                     >
                       −
                     </button>
-                    <span className="text-sm font-medium">{getItemQuantity(book._id)}</span>
+                    <span className="text-sm font-medium">
+                      {getItemQuantity(book._id)}
+                    </span>
                     <button
                       onClick={() => increaseQuantity(book)}
                       className="bg-gray-200 text-black px-2 rounded hover:bg-gray-300"
@@ -358,8 +386,6 @@ export default function Books() {
                     </button>
                   </div>
                 )}
-
-
               </div>
             </div>
           </div>
