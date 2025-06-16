@@ -220,13 +220,12 @@ export default function BookForm() {
             </label>
             <input
               type="number"
+              min={0}
               value={formData.stock ?? 0}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  stock: parseInt(e.target.value) || 0,
-                })
-              }
+              onChange={(e) => {
+                    const value = Math.max(0, parseInt(e.target.value) || 0);
+                    setFormData({ ...formData, stock: value });
+                 }}
               className="w-full px-3 py-2 border rounded-lg"
               required
             />

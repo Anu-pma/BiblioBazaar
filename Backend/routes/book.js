@@ -37,44 +37,87 @@ router.post("/add-book", authenticateToken, async (req, res) => {
 });
 
 //update book
+// router.put("/update-book", authenticateToken, async (req, res) => {
+//   try {
+//     const { bookid, id } = req.headers;
+//     if (!bookid) {
+//       return res
+//         .status(400)
+//         .json({ message: "Book ID is required in headers" });
+//     }
+//     const user = await User.findById(id);
+//     if (user.role !== "admin") {
+//       return res
+//         .status(400)
+//         .json({ message: "You are not having access to perform admin work" });
+//     }
+//     const updatedBook = await Book.findByIdAndUpdate(bookid, {
+//       url: req.body.url,
+//       title: req.body.title,
+//       author: req.body.author,
+//       price: req.body.price,
+//       stock: req.body.stock,
+//       category: req.body.category,
+//       desc: req.body.desc,
+//       language: req.body.language,
+//       ratings: req.body.ratings || [],
+//       reviews: req.body.reviews || [],
+//     });
+//     if (!updatedBook) {
+//       return res.status(404).json({ message: "Book not found" });
+//     }
+
+//     return res.status(200).json({
+//       message: "Book updated successfully",
+//       data: updatedBook,
+//     });
+//   } catch (error) {
+//     return res.status(500).json({ message: "An error occurred" });
+//   }
+// });
 router.put("/update-book", authenticateToken, async (req, res) => {
   try {
     const { bookid, id } = req.headers;
+
     if (!bookid) {
-      return res
-        .status(400)
-        .json({ message: "Book ID is required in headers" });
+      return res.status(400).json({ message: "Book ID is required in headers" });
     }
+
     const user = await User.findById(id);
     if (user.role !== "admin") {
-      return res
-        .status(400)
-        .json({ message: "You are not having access to perform admin work" });
+      return res.status(403).json({ message: "Access denied: Admins only" });
     }
-    const updatedBook = await Book.findByIdAndUpdate(bookid, {
-      url: req.body.url,
-      title: req.body.title,
-      author: req.body.author,
-      price: req.body.price,
-      stock: req.body.stock,
-      category: req.body.category,
-      desc: req.body.desc,
-      language: req.body.language,
-      ratings: req.body.ratings || [],
-      reviews: req.body.reviews || [],
-    });
-    if (!updatedBook) {
+
+    const existingBook = await Book.findById(bookid);
+    if (!existingBook) {
       return res.status(404).json({ message: "Book not found" });
     }
+
+    const updatedFields = {
+      url: req.body.url || existingBook.url,
+      title: req.body.title || existingBook.title,
+      author: req.body.author || existingBook.author,
+      price: req.body.price || existingBook.price,
+      stock: req.body.stock ?? existingBook.stock, // use nullish coalescing for numbers
+      category: req.body.category || existingBook.category,
+      desc: req.body.desc || existingBook.desc,
+      language: req.body.language || existingBook.language,
+      ratings: existingBook.ratings, // Preserve ratings
+      reviews: existingBook.reviews  // Preserve reviews
+    };
+
+    const updatedBook = await Book.findByIdAndUpdate(bookid, updatedFields, { new: true });
 
     return res.status(200).json({
       message: "Book updated successfully",
       data: updatedBook,
     });
   } catch (error) {
+    console.error("Update book error:", error);
     return res.status(500).json({ message: "An error occurred" });
   }
 });
+
 
 //delete
 router.delete("/delete-book", authenticateToken, async (req, res) => {
