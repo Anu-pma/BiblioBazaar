@@ -45,6 +45,11 @@ app.use("/api/v1",Cart);
 app.use("/api/v1",Order);
 app.use("/api/v1",GoogleAuth);
 
-app.listen(process.env.PORT,() => {
-    console.log(`Server Started ${process.env.PORT}`);
+// app.listen(process.env.PORT,() => {
+//     console.log(`Server Started ${process.env.PORT}`);
+// });
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`Server Started on port ${PORT}`);
 });
