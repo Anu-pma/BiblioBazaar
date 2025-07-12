@@ -28,7 +28,7 @@ const FavoritesContext = createContext<FavoritesContextType | undefined>(undefin
 
 export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [favorites, setFavorites] = useState<Book[]>([]);
-  const API_URL = `${import.meta.env.VITE_API_URL}/api/v1`;
+  // const API_URL = `${import.meta.env.VITE_API_URL}/api/v1`;
 
   const token = localStorage.getItem('token');
   const userId = localStorage.getItem('userId'); // Make sure you're storing as 'userId'
@@ -36,7 +36,7 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const fetchFavorites = async () => {
     if (!token || !userId) return;
     try {
-      const res = await axios.get(`${API_URL}/favourite-books`, {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/v1/favourite-books`, {
         headers: {
           Authorization: `Bearer ${token}`,
           id: userId,
@@ -52,7 +52,7 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     if (!token || !userId) return;
     try {
       await axios.put(
-        `${API_URL}/add-book-to-favourite`,
+        `${import.meta.env.VITE_API_URL}/api/v1/add-book-to-favourite`,
         {id: userId,
         bookid: book._id,},
         {
@@ -72,7 +72,7 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     if (!token || !userId) return;
     try {
       await axios.put(
-        `${API_URL}/remove-book-from-favourite`,
+        `${import.meta.env.VITE_API_URL}/api/v1/remove-book-from-favourite`,
         {id: userId,
             bookid: bookId,},
         {
