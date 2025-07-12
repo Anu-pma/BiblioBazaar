@@ -28,7 +28,7 @@ const FavoritesContext = createContext<FavoritesContextType | undefined>(undefin
 
 export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [favorites, setFavorites] = useState<Book[]>([]);
-  const API_URL = '${import.meta.env.VITE_API_URL}/api/v1';
+  const API_URL = `${import.meta.env.VITE_API_URL}/api/v1`;
 
   const token = localStorage.getItem('token');
   const userId = localStorage.getItem('userId'); // Make sure you're storing as 'userId'
