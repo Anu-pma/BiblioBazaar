@@ -16,18 +16,18 @@ export default function Shipping() {
               <div className="border-b pb-4">
                 <h3 className="font-semibold mb-2">Standard Shipping</h3>
                 <p className="text-gray-600">3-5 business days</p>
-                <p className="text-gray-600">$4.99 for orders under $35</p>
-                <p className="text-gray-600">Free for orders over $35</p>
+                <p className="text-gray-600">₹10 for orders under ₹200</p>
+                <p className="text-gray-600">Free for orders over ₹200</p>
               </div>
               <div className="border-b pb-4">
                 <h3 className="font-semibold mb-2">Express Shipping</h3>
                 <p className="text-gray-600">1-2 business days</p>
-                <p className="text-gray-600">$9.99 flat rate</p>
+                <p className="text-gray-600">₹20 flat rate</p>
               </div>
               <div>
                 <h3 className="font-semibold mb-2">Next Day Delivery</h3>
                 <p className="text-gray-600">Next business day</p>
-                <p className="text-gray-600">$14.99 flat rate</p>
+                <p className="text-gray-600">₹50 flat rate</p>
               </div>
             </div>
           </div>
