@@ -40,8 +40,8 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const statsRes = await axios.get("${import.meta.env.VITE_API_URL}/api/v1/stats");
-        const ordersRes = await axios.get("${import.meta.env.VITE_API_URL}/api/v1/orders/recent");
+        const statsRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/v1/stats`);
+        const ordersRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/v1/orders/recent`);
 
         setStats(statsRes.data);
         setRecentOrders(ordersRes.data);

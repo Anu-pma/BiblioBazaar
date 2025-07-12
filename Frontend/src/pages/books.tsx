@@ -54,7 +54,7 @@ export default function Books() {
       try {
         setLoading(true);
         const response = await fetch(
-          "${import.meta.env.VITE_API_URL}/api/v1/get-all-books"
+          `${import.meta.env.VITE_API_URL}/api/v1/get-all-books`
         );
         if (!response.ok) throw new Error("Failed to fetch books");
         const result = await response.json();

@@ -21,7 +21,7 @@ export default function SignIn() {
       console.log('Google login code response:', codeResponse);
 
       // Send this code to your backend to exchange for tokens
-      const res = await fetch('${import.meta.env.VITE_API_URL}/api/v1/google', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/google`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: codeResponse.code }),

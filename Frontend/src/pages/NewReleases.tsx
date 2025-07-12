@@ -35,7 +35,7 @@ export default function NewReleases() {
   const fetchNewReleases = async () => {
     try {
       const response = await fetch(
-        "${import.meta.env.VITE_API_URL}/api/v1/get-recent-books"
+        `${import.meta.env.VITE_API_URL}/api/v1/get-recent-books`
       );
       const data = await response.json();
 

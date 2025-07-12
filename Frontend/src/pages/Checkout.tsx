@@ -96,7 +96,7 @@ export default function Checkout() {
     const token = localStorage.getItem('token');
 
     const response = await axios.post(
-      '${import.meta.env.VITE_API_URL}/api/v1/create-razorpay-order',
+      `${import.meta.env.VITE_API_URL}/api/v1/create-razorpay-order`,
       {
         amount: Math.round(total * 100), // Razorpay expects amount in paise
         currency: 'INR'
@@ -127,7 +127,7 @@ export default function Checkout() {
     }));
 
     const response = await axios.post(
-      '${import.meta.env.VITE_API_URL}/api/v1/verify-payment',
+      `${import.meta.env.VITE_API_URL}/api/v1/verify-payment`,
       {
         ...paymentDetails,
         order: orderItems,
