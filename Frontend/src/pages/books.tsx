@@ -54,7 +54,7 @@ export default function Books() {
       try {
         setLoading(true);
         const response = await fetch(
-          "http://localhost:3000/api/v1/get-all-books"
+          "${import.meta.env.VITE_API_URL}/api/v1/get-all-books"
         );
         if (!response.ok) throw new Error("Failed to fetch books");
         const result = await response.json();
@@ -99,16 +99,7 @@ export default function Books() {
         (priceRange.min === 0 && priceRange.max === 0) ||
         (book.price >= priceRange.min && book.price <= priceRange.max)
     )
-    // .sort((a, b) => {
-    //   switch (sortBy) {
-    //     case "price":
-    //       return a.price - b.price; // ascending by price
-    //     case "rating":
-    //       return (b.rating || 0) - (a.rating || 0); // descending by rating
-    //     default:
-    //       return a.title.localeCompare(b.title); // alphabetically by title
-    //   }
-    // });
+
     .sort((a, b) => {
   switch (sortBy) {
     case "price":

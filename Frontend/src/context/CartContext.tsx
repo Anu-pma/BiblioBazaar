@@ -45,8 +45,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const fetchCart = async () => {
       try {
-        const res = await axios.get('http://localhost:3000/api/v1/cart-books', {
-          headers: { Authorization: `Bearer ${token}`, id: userId }
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/v1/cart-books`, {
+          headers: { Authorization: `Bearer ${token}`, id: userId },
+          withCredentials: true 
         });
         const cartData = res.data.data.map((book: Book) => ({ ...book, quantity: 1 }));
         setItems(cartData);
@@ -60,7 +61,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const addToCart = async (book: Book) => {
     try {
       await axios.put(
-      'http://localhost:3000/api/v1/add-book-to-cart',
+      `${import.meta.env.VITE_API_URL}/api/v1/add-book-to-cart`,
       {
         bookid: book._id,
       },
@@ -83,7 +84,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const removeFromCart = async (bookId: string) => {
     try {
       await axios.put(
-        'http://localhost:3000/api/v1/remove-book-from-cart',
+        `${import.meta.env.VITE_API_URL}/api/v1/remove-book-from-cart`,
         {bookid: bookId,
             id: userId,}, // no body
         {

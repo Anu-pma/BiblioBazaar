@@ -44,7 +44,7 @@ export default function BookForm() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `http://localhost:3000/api/v1/get-book-by-id/${id}`,
+        `${import.meta.env.VITE_API_URL}/api/v1/get-book-by-id/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -95,7 +95,7 @@ export default function BookForm() {
         headers["bookid"] = id!;
       }
 
-      const response = await fetch(`http://localhost:3000/api/v1/${endpoint}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/${endpoint}`, {
         method,
         headers,
         body: JSON.stringify({

@@ -42,7 +42,7 @@ export default function BookDetails() {
     const fetchBookDetails = async () => {
       try {
         const response = await fetch(
-          `http://localhost:3000/api/v1/get-book-by-id/${id}`
+          `${import.meta.env.VITE_API_URL}/api/v1/get-book-by-id/${id}`
         );
         const data = await response.json();
         if (data.status === "Success" && data.data) {

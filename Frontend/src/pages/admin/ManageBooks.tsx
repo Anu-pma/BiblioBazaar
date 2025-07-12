@@ -31,7 +31,7 @@ export default function ManageBooks() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        "http://localhost:3000/api/v1/get-all-books",
+        "${import.meta.env.VITE_API_URL}/api/v1/get-all-books",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -60,7 +60,7 @@ export default function ManageBooks() {
       const token = localStorage.getItem("token");
       const userId = localStorage.getItem("userId");
 
-      const response = await fetch("http://localhost:3000/api/v1/delete-book", {
+      const response = await fetch("${import.meta.env.VITE_API_URL}/api/v1/delete-book", {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -88,7 +88,7 @@ export default function ManageBooks() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `http://localhost:3000/api/v1/sort-books?sortBy=${field}&order=${newOrder}`,
+        `${import.meta.env.VITE_API_URL}/api/v1/sort-books?sortBy=${field}&order=${newOrder}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

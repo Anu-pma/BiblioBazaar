@@ -36,7 +36,7 @@ export default function Deals() {
   const fetchDeals = async () => {
     try {
       const response = await fetch(
-        "http://localhost:3000/api/v1/filter-books-by-price?minPrice=0&maxPrice=15"
+        "${import.meta.env.VITE_API_URL}/api/v1/filter-books-by-price?minPrice=0&maxPrice=15"
       );
       const data = await response.json();
 

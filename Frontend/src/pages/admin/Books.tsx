@@ -32,7 +32,7 @@ export default function AdminBooks() {
   const fetchBooks = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/v1/get-all-books', {
+      const response = await fetch('${import.meta.env.VITE_API_URL}/api/v1/get-all-books', {
         headers: {
           'Authorization': `Bearer ${token}`,
         }
@@ -67,7 +67,7 @@ export default function AdminBooks() {
       const token = localStorage.getItem('token');
       const user_id = localStorage.getItem('user_id');
 
-      const response = await fetch('http://localhost:3000/api/v1/delete-book', {
+      const response = await fetch('${import.meta.env.VITE_API_URL}/api/v1/delete-book', {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

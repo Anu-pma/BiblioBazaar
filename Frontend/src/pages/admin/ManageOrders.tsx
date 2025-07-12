@@ -47,7 +47,7 @@ function ManageOrders() {
   const fetchOrders = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/v1/get-all-orders', {
+      const response = await fetch('${import.meta.env.VITE_API_URL}/api/v1/get-all-orders', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -84,7 +84,7 @@ function ManageOrders() {
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/v1/update-status', {
+      const response = await fetch('${import.meta.env.VITE_API_URL}/api/v1/update-status', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

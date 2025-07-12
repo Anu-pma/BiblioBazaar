@@ -36,7 +36,7 @@ function AuthorsPage() {
 
   const fetchBooks = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/v1/get-all-books');
+      const response = await fetch('${import.meta.env.VITE_API_URL}/api/v1/get-all-books');
       const data = await response.json();
 
       if (data.status === "Success") {

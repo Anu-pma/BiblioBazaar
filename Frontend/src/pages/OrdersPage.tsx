@@ -117,7 +117,7 @@ const OrdersPage = () => {
           return;
         }
         const res = await axios.post(
-          "http://localhost:3000/api/v1/get-order-history",
+          "${import.meta.env.VITE_API_URL}/api/v1/get-order-history",
           {},
           {
             headers: {
@@ -149,7 +149,7 @@ const OrdersPage = () => {
     }
 
     try {
-      const res = await fetch("http://localhost:3000/api/v1/add-rating", {
+      const res = await fetch("${import.meta.env.VITE_API_URL}/api/v1/add-rating", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -179,7 +179,7 @@ const OrdersPage = () => {
     }
 
     try {
-      const res = await fetch("http://localhost:3000/api/v1/add-review", {
+      const res = await fetch("${import.meta.env.VITE_API_URL}/api/v1/add-review", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
