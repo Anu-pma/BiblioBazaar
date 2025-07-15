@@ -237,7 +237,7 @@ export default function Books() {
               </select>
             </div>
 
-            <div>
+            {/* <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Price Range
               </label>
@@ -267,7 +267,37 @@ export default function Books() {
                   }
                 />
               </div>
-            </div>
+            </div> */}
+            <div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Price Range
+  </label>
+  <div className="flex gap-4">
+    <input
+      type="number"
+      placeholder="Min"
+      min="0"
+      className="w-full px-3 py-2 border rounded-lg"
+      value={priceRange.min}
+      onChange={(e) => {
+        const value = Math.max(0, Number(e.target.value));
+        setPriceRange({ ...priceRange, min: value });
+      }}
+    />
+    <input
+      type="number"
+      placeholder="Max"
+      min="0"
+      className="w-full px-3 py-2 border rounded-lg"
+      value={priceRange.max}
+      onChange={(e) => {
+        const value = Math.max(0, Number(e.target.value));
+        setPriceRange({ ...priceRange, max: value });
+      }}
+    />
+  </div>
+</div>
+
           </div>
         </div>
       )}

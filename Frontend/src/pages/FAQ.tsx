@@ -28,7 +28,7 @@ export default function FAQ() {
     },
     {
       question: "Do you ship internationally?",
-      answer: "Yes, we ship to most countries worldwide. International shipping rates and delivery times vary by location. Please note that additional customs fees or import duties may apply depending on your country's regulations."
+      answer: "Not at the moment, but we're working on expanding our services and hope to offer international shipping in the near future. Stay tuned!"
     },
     {
       question: "How can I track my order?",
@@ -81,7 +81,7 @@ export default function FAQ() {
           <ul className="space-y-2 text-gray-700">
             <li>• Email: support@bibliobazaar.com</li>
             <li>• Phone: +1 (555) 123-4567</li>
-            <li>• Live Chat: Available 24/7 on our website</li>
+            {/* <li>• Live Chat: Available 24/7 on our website</li> */}
           </ul>
         </div>
       </div>

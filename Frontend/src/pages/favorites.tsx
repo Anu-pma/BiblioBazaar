@@ -64,7 +64,7 @@ export default function Favorites() {
             <div className="p-4">
               <h3 className="text-lg font-semibold mb-2">{book.title}</h3>
               <p className="text-gray-600 mb-2">{book.author}</p>
-              <p className="text-xl font-bold mb-4">${book.price.toFixed(2)}</p>
+              <p className="text-xl font-bold mb-4">₹{book.price.toFixed(2)}</p>
 
               <div className="flex gap-2 items-center">
                 {bookInCart(book._id) ? (

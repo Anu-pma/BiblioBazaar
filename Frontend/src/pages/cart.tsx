@@ -72,7 +72,7 @@ export default function Cart() {
                       <PlusCircle size={20} />
                     </button>
                   </div>
-                  <p className="text-lg font-semibold">${(item.price * item.quantity).toFixed(2)}</p>
+                  <p className="text-lg font-semibold">₹{(item.price * item.quantity).toFixed(2)}</p>
                 </div>
               </div>
             </div>
@@ -85,7 +85,7 @@ export default function Cart() {
           <div className="space-y-2 mb-4">
             <div className="flex justify-between">
               <span>Subtotal</span>
-              <span>${total.toFixed(2)}</span>
+              <span>₹{total.toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
               <span>Shipping</span>
@@ -96,7 +96,7 @@ export default function Cart() {
           <div className="border-t pt-4 mb-6">
             <div className="flex justify-between text-lg font-bold">
               <span>Total</span>
-              <span>${total.toFixed(2)}</span>
+              <span>₹{total.toFixed(2)}</span>
             </div>
           </div>
 

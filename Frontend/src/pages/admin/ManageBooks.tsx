@@ -202,7 +202,7 @@ export default function ManageBooks() {
                       {book.author}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500">
-                      ${book.price.toFixed(2)}
+                      ₹{book.price.toFixed(2)}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500">
                       {book.language}

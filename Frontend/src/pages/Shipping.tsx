@@ -103,7 +103,7 @@ export default function Shipping() {
             <div className="space-y-2">
               <p className="text-gray-700">• Email: shipping@bibliobazaar.com</p>
               <p className="text-gray-700">• Phone: +1 (555) 123-4567</p>
-              <p className="text-gray-700">• Live Chat: Available 24/7</p>
+              {/* <p className="text-gray-700">• Live Chat: Available 24/7</p> */}
             </div>
           </div>
         </div>
